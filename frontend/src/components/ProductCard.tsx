@@ -5,12 +5,13 @@ import type { Product, ProductImage } from '../types/database'
 interface Props {
   product: Product
   image?: ProductImage | null
+  basePath: '/lingerie' | '/sex-shop'
 }
 
-export function ProductCard({ product, image }: Props) {
+export function ProductCard({ product, image, basePath }: Props) {
   return (
     <Link
-      to={`/produto/${product.slug}`}
+      to={`${basePath}/produto/${product.slug}`}
       className="group block overflow-hidden rounded-xl border border-brand-rose-light bg-white transition hover:shadow-lg"
     >
       <div className="aspect-square overflow-hidden bg-brand-rose-light">

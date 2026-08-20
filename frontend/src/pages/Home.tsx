@@ -1,23 +1,6 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchActiveProducts, fetchCategories, type ProductListItem } from '../lib/products'
-import { ProductCard } from '../components/ProductCard'
-import type { Category } from '../types/database'
 
 export function Home() {
-  const [products, setProducts] = useState<ProductListItem[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    Promise.all([fetchActiveProducts(), fetchCategories()])
-      .then(([p, c]) => {
-        setProducts(p.slice(0, 8))
-        setCategories(c)
-      })
-      .finally(() => setLoading(false))
-  }, [])
-
   return (
     <div className="flex flex-col gap-12">
       <section className="rounded-2xl bg-gradient-to-br from-brand-plum to-brand-rose px-6 py-16 text-center text-white">
@@ -25,44 +8,34 @@ export function Home() {
         <p className="mx-auto mt-4 max-w-lg text-white/90">
           Lingerie e produtos íntimos selecionados com carinho. Entrega discreta em todo o Brasil.
         </p>
-        <Link
-          to="/catalogo"
-          className="mt-6 inline-block rounded-full bg-white px-6 py-2.5 font-medium text-brand-plum hover:bg-brand-rose-light"
-        >
-          Ver catálogo
-        </Link>
       </section>
 
-      {categories.length > 0 && (
-        <section>
-          <h2 className="mb-4 font-serif text-2xl text-brand-plum">Categorias</h2>
-          <div className="flex flex-wrap gap-3">
-            {categories.map((c) => (
-              <Link
-                key={c.id}
-                to={`/catalogo?categoria=${c.slug}`}
-                className="rounded-full border border-brand-rose-light bg-white px-4 py-2 text-sm hover:bg-brand-rose-light"
-              >
-                {c.name}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <section className="grid gap-6 md:grid-cols-2">
+        <Link
+          to="/lingerie"
+          className="group flex flex-col justify-end overflow-hidden rounded-2xl bg-brand-rose-light p-8 text-left transition hover:shadow-lg"
+        >
+          <h2 className="font-serif text-2xl text-brand-plum">Lingerie</h2>
+          <p className="mt-2 text-sm text-brand-black/70">
+            Conjuntos, sutiãs, calcinhas e camisolas para todos os momentos.
+          </p>
+          <span className="mt-4 inline-block text-sm font-medium text-brand-rose group-hover:underline">
+            Ver catálogo →
+          </span>
+        </Link>
 
-      <section>
-        <h2 className="mb-4 font-serif text-2xl text-brand-plum">Novidades</h2>
-        {loading ? (
-          <p className="text-brand-black/60">Carregando produtos…</p>
-        ) : products.length === 0 ? (
-          <p className="text-brand-black/60">Nenhum produto cadastrado ainda.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {products.map(({ product, mainImage }) => (
-              <ProductCard key={product.id} product={product} image={mainImage} />
-            ))}
-          </div>
-        )}
+        <Link
+          to="/sex-shop"
+          className="group flex flex-col justify-end overflow-hidden rounded-2xl bg-brand-plum p-8 text-left text-white transition hover:shadow-lg"
+        >
+          <h2 className="font-serif text-2xl">Sex Shop</h2>
+          <p className="mt-2 text-sm text-white/80">
+            Produtos íntimos para maiores de 18 anos, com discrição do início ao fim.
+          </p>
+          <span className="mt-4 inline-block text-sm font-medium text-brand-gold group-hover:underline">
+            Ver catálogo (18+) →
+          </span>
+        </Link>
       </section>
     </div>
   )

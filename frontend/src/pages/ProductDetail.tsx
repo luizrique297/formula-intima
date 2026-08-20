@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { fetchProductBySlug } from '../lib/products'
 import { formatPriceCents, publicImageUrl } from '../lib/format'
 import { useCart } from '../contexts/CartContext'
@@ -14,6 +14,8 @@ export function ProductDetail() {
   const [added, setAdded] = useState(false)
   const { addItem } = useCart()
   const navigate = useNavigate()
+  const location = useLocation()
+  const basePath = location.pathname.startsWith('/sex-shop') ? '/sex-shop' : '/lingerie'
 
   useEffect(() => {
     if (!slug) return
@@ -30,7 +32,7 @@ export function ProductDetail() {
     return (
       <div className="py-16 text-center">
         <p className="text-brand-black/60">Produto não encontrado.</p>
-        <Link to="/catalogo" className="mt-2 inline-block text-brand-rose hover:underline">
+        <Link to={basePath} className="mt-2 inline-block text-brand-rose hover:underline">
           Voltar ao catálogo
         </Link>
       </div>

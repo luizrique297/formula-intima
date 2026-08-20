@@ -2,9 +2,14 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { fetchActiveProducts, fetchCategories, type ProductListItem } from '../lib/products'
 import { ProductCard } from '../components/ProductCard'
-import type { Category } from '../types/database'
+import type { Category, Department } from '../types/database'
 
-export function Catalog() {
+interface Props {
+  department: Department
+  title: string
+}
+
+export function Catalog({ department, title }: Props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const categoriaSlug = searchParams.get('categoria') ?? ''
   const [search, setSearch] = useState(searchParams.get('busca') ?? '')
@@ -12,16 +17,18 @@ export function Catalog() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
 
+  const basePath = department === 'lingerie' ? '/lingerie' : '/sex-shop'
+
   useEffect(() => {
-    fetchCategories().then(setCategories)
-  }, [])
+    fetchCategories(department).then(setCategories)
+  }, [department])
 
   useEffect(() => {
     setLoading(true)
-    fetchActiveProducts({ categorySlug: categoriaSlug || undefined, search: search || undefined })
+    fetchActiveProducts({ department, categorySlug: categoriaSlug || undefined, search: search || undefined })
       .then(setProducts)
       .finally(() => setLoading(false))
-  }, [categoriaSlug, search])
+  }, [department, categoriaSlug, search])
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -40,7 +47,7 @@ export function Catalog() {
 
   return (
     <div>
-      <h1 className="mb-6 font-serif text-2xl text-brand-plum">Catálogo</h1>
+      <h1 className="mb-6 font-serif text-2xl text-brand-plum">{title}</h1>
 
       <form onSubmit={handleSearchSubmit} className="mb-4 flex gap-2">
         <input
@@ -80,7 +87,7 @@ export function Catalog() {
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
           {products.map(({ product, mainImage }) => (
-            <ProductCard key={product.id} product={product} image={mainImage} />
+            <ProductCard key={product.id} product={product} image={mainImage} basePath={basePath} />
           ))}
         </div>
       )}

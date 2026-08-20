@@ -22,8 +22,11 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-brand-black/80 md:flex">
-          <Link to="/catalogo" className="hover:text-brand-rose">
-            Catálogo
+          <Link to="/lingerie" className="hover:text-brand-rose">
+            Lingerie
+          </Link>
+          <Link to="/sex-shop" className="hover:text-brand-rose">
+            Sex Shop
           </Link>
           {isAdmin && (
             <Link to="/admin" className="hover:text-brand-rose">

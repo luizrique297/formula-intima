@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
-import type { ProductVariant, Product } from '../types/database'
+import type { Department, ProductVariant, Product } from '../types/database'
 
 export interface CartLine {
   variantId: string
@@ -10,6 +10,7 @@ export interface CartLine {
   variant: Pick<ProductVariant, 'id' | 'size' | 'color' | 'price_cents_override'>
   imagePath: string | null
   availableQuantity: number
+  department: Department
 }
 
 interface CartContextValue {
@@ -53,7 +54,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const { data: variants } = await supabase
       .from('product_variants')
-      .select('id, size, color, price_cents_override, product_id, products(id, name, slug, price_cents)')
+      .select(
+        'id, size, color, price_cents_override, product_id, products(id, name, slug, price_cents, categories(department))',
+      )
       .in('id', variantIds)
 
     const { data: inventoryRows } = await supabase
@@ -81,6 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       variant: { id: v.id, size: v.size, color: v.color, price_cents_override: v.price_cents_override },
       imagePath: imageMap.get(v.product_id) ?? null,
       availableQuantity: inventoryMap.get(v.id) ?? 0,
+      department: v.products?.categories?.department ?? 'lingerie',
     }))
   }
 

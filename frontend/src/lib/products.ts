@@ -1,8 +1,10 @@
 import { supabase } from './supabase'
-import type { Category, Product, ProductImage, ProductWithDetails } from '../types/database'
+import type { Category, Department, Product, ProductImage, ProductWithDetails } from '../types/database'
 
-export async function fetchCategories(): Promise<Category[]> {
-  const { data, error } = await supabase.from('categories').select('*').order('name')
+export async function fetchCategories(department?: Department): Promise<Category[]> {
+  let query = supabase.from('categories').select('*').order('name')
+  if (department) query = query.eq('department', department)
+  const { data, error } = await query
   if (error) throw error
   return data ?? []
 }
@@ -13,14 +15,15 @@ export interface ProductListItem {
 }
 
 export async function fetchActiveProducts(opts?: {
+  department?: Department
   categorySlug?: string
   search?: string
 }): Promise<ProductListItem[]> {
-  let query = supabase.from('products').select('*, categories(slug)').eq('is_active', true)
+  let query = supabase.from('products').select('*, categories(slug, department)').eq('is_active', true)
 
-  // Filtro por categoria é aplicado depois, em memória (linha ~44): o PostgREST
-  // não filtra a linha principal por coluna de uma tabela embutida sem `!inner`,
-  // então um `.eq('categories.slug', ...)` aqui seria silenciosamente ignorado.
+  // Filtro por categoria/departamento é aplicado depois, em memória (linha ~30):
+  // o PostgREST não filtra a linha principal por coluna de uma tabela embutida
+  // sem `!inner`, então um `.eq('categories.slug', ...)` aqui seria ignorado.
   if (opts?.search) {
     query = query.ilike('name', `%${opts.search}%`)
   }
@@ -28,7 +31,13 @@ export async function fetchActiveProducts(opts?: {
   const { data: products, error } = await query.order('created_at', { ascending: false })
   if (error) throw error
 
-  const productIds = (products ?? []).map((p) => p.id)
+  const filtered = (products ?? []).filter((p: any) => {
+    if (opts?.department && p.categories?.department !== opts.department) return false
+    if (opts?.categorySlug && p.categories?.slug !== opts.categorySlug) return false
+    return true
+  })
+
+  const productIds = filtered.map((p: any) => p.id)
   const { data: images } = await supabase
     .from('product_images')
     .select('*')
@@ -40,9 +49,7 @@ export async function fetchActiveProducts(opts?: {
     if (!imageMap.has(img.product_id)) imageMap.set(img.product_id, img)
   }
 
-  return (products ?? [])
-    .filter((p: any) => !opts?.categorySlug || p.categories?.slug === opts.categorySlug)
-    .map((p: any) => ({ product: p, mainImage: imageMap.get(p.id) ?? null }))
+  return filtered.map((p: any) => ({ product: p, mainImage: imageMap.get(p.id) ?? null }))
 }
 
 export async function fetchProductBySlug(slug: string): Promise<ProductWithDetails | null> {

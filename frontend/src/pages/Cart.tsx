@@ -14,7 +14,7 @@ export function Cart() {
     return (
       <div className="py-16 text-center">
         <p className="text-brand-black/60">Seu carrinho está vazio.</p>
-        <Link to="/catalogo" className="mt-2 inline-block text-brand-rose hover:underline">
+        <Link to="/" className="mt-2 inline-block text-brand-rose hover:underline">
           Ver catálogo
         </Link>
       </div>
@@ -45,7 +45,10 @@ export function Cart() {
                 )}
               </div>
               <div className="flex-1">
-                <Link to={`/produto/${line.product.slug}`} className="text-sm font-medium hover:text-brand-rose">
+                <Link
+                  to={`${line.department === 'sex_shop' ? '/sex-shop' : '/lingerie'}/produto/${line.product.slug}`}
+                  className="text-sm font-medium hover:text-brand-rose"
+                >
                   {line.product.name}
                 </Link>
                 {label && <p className="text-xs text-brand-black/50">{label}</p>}

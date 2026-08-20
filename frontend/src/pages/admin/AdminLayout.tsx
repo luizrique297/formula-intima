@@ -13,6 +13,9 @@ export function AdminLayout() {
         <NavLink to="/admin/produtos" className={linkClass}>
           Produtos
         </NavLink>
+        <NavLink to="/admin/categorias" className={linkClass}>
+          Categorias
+        </NavLink>
         <NavLink to="/admin/pedidos" className={linkClass}>
           Pedidos
         </NavLink>

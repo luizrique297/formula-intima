@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import type {
   Category,
+  Department,
   Inventory,
   Order,
   OrderItem,
@@ -108,8 +109,8 @@ export async function deleteVariant(variantId: string): Promise<void> {
   await supabase.from('product_variants').delete().eq('id', variantId)
 }
 
-export async function createCategory(name: string, slug: string): Promise<Category> {
-  const { data, error } = await supabase.from('categories').insert({ name, slug }).select().single()
+export async function createCategory(name: string, slug: string, department: Department): Promise<Category> {
+  const { data, error } = await supabase.from('categories').insert({ name, slug, department }).select().single()
   if (error) throw error
   return data as Category
 }

@@ -143,7 +143,7 @@ export function AdminProductForm() {
             <option value="">Sem categoria</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name}
+                {c.name} — {c.department === 'sex_shop' ? 'Sex Shop' : 'Lingerie'}
               </option>
             ))}
           </select>

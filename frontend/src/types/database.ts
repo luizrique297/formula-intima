@@ -31,11 +31,14 @@ export interface Address {
   created_at: string
 }
 
+export type Department = 'lingerie' | 'sex_shop'
+
 export interface Category {
   id: string
   name: string
   slug: string
   description: string | null
+  department: Department
   created_at: string
 }
 
