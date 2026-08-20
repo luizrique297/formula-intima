@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { fetchAddresses, createAddress, type NewAddress } from '../lib/addresses'
+import { fetchShippingRateByUf } from '../lib/shipping'
 import { supabase } from '../lib/supabase'
 import { formatPriceCents } from '../lib/format'
 import { AddressForm } from '../components/AddressForm'
@@ -16,6 +17,7 @@ export function Checkout() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [shippingCents, setShippingCents] = useState<number | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -26,6 +28,15 @@ export function Checkout() {
       setShowForm(addrs.length === 0)
     })
   }, [user])
+
+  useEffect(() => {
+    const address = addresses.find((a) => a.id === selectedAddressId)
+    if (!address) {
+      setShippingCents(null)
+      return
+    }
+    fetchShippingRateByUf(address.state).then(setShippingCents)
+  }, [selectedAddressId, addresses])
 
   async function handleSaveAddress(address: NewAddress) {
     if (!user) return
@@ -107,9 +118,19 @@ export function Checkout() {
               </div>
             )
           })}
+          <div className="flex justify-between py-1 text-sm">
+            <span>Frete</span>
+            <span>
+              {shippingCents === null
+                ? '—'
+                : shippingCents === 0
+                  ? 'Grátis'
+                  : formatPriceCents(shippingCents)}
+            </span>
+          </div>
           <div className="mt-2 flex justify-between border-t border-brand-rose-light pt-2 font-medium">
             <span>Total</span>
-            <span className="text-brand-rose">{formatPriceCents(totalCents)}</span>
+            <span className="text-brand-rose">{formatPriceCents(totalCents + (shippingCents ?? 0))}</span>
           </div>
         </div>
       </section>
@@ -118,7 +139,7 @@ export function Checkout() {
 
       <button
         onClick={handleConfirm}
-        disabled={!selectedAddressId || submitting || lines.length === 0}
+        disabled={!selectedAddressId || submitting || lines.length === 0 || shippingCents === null}
         className="w-full rounded-full bg-brand-rose py-3 text-sm font-medium text-white hover:bg-brand-plum disabled:opacity-50"
       >
         {submitting ? 'Redirecionando para pagamento…' : 'Pagar com Mercado Pago'}

@@ -93,6 +93,7 @@ export interface Order {
   address_id: string
   status: OrderStatus
   total_cents: number
+  shipping_cents: number
   created_at: string
   updated_at: string
 }

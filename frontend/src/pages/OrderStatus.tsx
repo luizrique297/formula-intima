@@ -60,6 +60,10 @@ export function OrderStatus() {
             <span>{formatPriceCents(item.unit_price_cents * item.quantity)}</span>
           </div>
         ))}
+        <div className="flex justify-between py-1 text-sm">
+          <span>Frete</span>
+          <span>{order.shipping_cents === 0 ? 'Grátis' : formatPriceCents(order.shipping_cents)}</span>
+        </div>
         <div className="mt-2 flex justify-between border-t border-brand-rose-light pt-2 font-medium">
           <span>Total</span>
           <span className="text-brand-rose">{formatPriceCents(order.total_cents)}</span>

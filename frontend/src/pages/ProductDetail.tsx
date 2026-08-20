@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { fetchProductBySlug } from '../lib/products'
 import { formatPriceCents, publicImageUrl } from '../lib/format'
 import { useCart } from '../contexts/CartContext'
+import { ShippingCalculator } from '../components/ShippingCalculator'
 import type { ProductWithDetails } from '../types/database'
 
 export function ProductDetail() {
@@ -138,6 +139,10 @@ export function ProductDetail() {
         </div>
 
         <p className="mt-4 text-xs text-brand-black/40">Embalagem discreta, sem identificação do conteúdo.</p>
+
+        <div className="mt-6">
+          <ShippingCalculator />
+        </div>
       </div>
     </div>
   )

@@ -19,6 +19,7 @@ import { AdminProducts } from './pages/admin/AdminProducts'
 import { AdminProductForm } from './pages/admin/AdminProductForm'
 import { AdminOrders } from './pages/admin/AdminOrders'
 import { AdminCategories } from './pages/admin/AdminCategories'
+import { AdminShipping } from './pages/admin/AdminShipping'
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="produtos" element={<AdminProducts />} />
               <Route path="produtos/:productId" element={<AdminProductForm />} />
               <Route path="categorias" element={<AdminCategories />} />
+              <Route path="frete" element={<AdminShipping />} />
               <Route path="pedidos" element={<AdminOrders />} />
             </Route>
           </Route>

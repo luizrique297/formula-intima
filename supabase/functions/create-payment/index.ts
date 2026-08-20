@@ -34,6 +34,15 @@ Deno.serve(async (req) => {
       .single()
     if (!address) throw new Error('Endereço inválido.')
 
+    // Frete calculado no servidor a partir da UF do endereço — nunca confia no
+    // valor que o navegador possa ter mostrado ao cliente.
+    const { data: shippingRate } = await supabase
+      .from('shipping_rates')
+      .select('price_cents')
+      .eq('uf', address.state)
+      .single()
+    const shippingCents = shippingRate?.price_cents ?? 0
+
     const { data: cartItems } = await supabase.from('cart_items').select('variant_id, quantity').eq('user_id', userId)
     if (!cartItems || cartItems.length === 0) throw new Error('Carrinho vazio.')
 
@@ -73,9 +82,17 @@ Deno.serve(async (req) => {
       totalCents += unitPrice * item.quantity
     }
 
+    const totalWithShippingCents = totalCents + shippingCents
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert({ user_id: userId, address_id, status: 'aguardando_pagamento', total_cents: totalCents })
+      .insert({
+        user_id: userId,
+        address_id,
+        status: 'aguardando_pagamento',
+        total_cents: totalWithShippingCents,
+        shipping_cents: shippingCents,
+      })
       .select()
       .single()
     if (orderError || !order) throw new Error('Não foi possível criar o pedido.')
@@ -83,16 +100,21 @@ Deno.serve(async (req) => {
     const itemsToInsert = orderItems.map((i) => ({ ...i, order_id: order.id }))
     await supabase.from('order_items').insert(itemsToInsert)
 
+    const mpItems = orderItems.map((i) => ({
+      title: i.product_name + (i.variant_label ? ` (${i.variant_label})` : ''),
+      quantity: i.quantity,
+      unit_price: i.unit_price_cents / 100,
+      currency_id: 'BRL',
+    }))
+    if (shippingCents > 0) {
+      mpItems.push({ title: 'Frete', quantity: 1, unit_price: shippingCents / 100, currency_id: 'BRL' })
+    }
+
     const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
       headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        items: orderItems.map((i) => ({
-          title: i.product_name + (i.variant_label ? ` (${i.variant_label})` : ''),
-          quantity: i.quantity,
-          unit_price: i.unit_price_cents / 100,
-          currency_id: 'BRL',
-        })),
+        items: mpItems,
         external_reference: order.id,
         notification_url: `${SUPABASE_URL}/functions/v1/mp-webhook`,
         back_urls: {
@@ -115,7 +137,7 @@ Deno.serve(async (req) => {
       order_id: order.id,
       mp_preference_id: preference.id,
       status: 'pending',
-      amount_cents: totalCents,
+      amount_cents: totalWithShippingCents,
     })
 
     // Esvazia o carrinho agora que virou pedido.
