@@ -28,6 +28,10 @@ Nenhuma dessas partes cobra mensalidade nos planos gratuitos usados aqui; o Merc
 1. Acesse o [Google Cloud Console](https://console.cloud.google.com/) → crie um projeto → **APIs & Services → Credentials → Create Credentials → OAuth client ID** (tipo "Web application").
 2. Em **Authorized redirect URIs**, adicione a URL de callback que o Supabase mostra em **Authentication → Providers → Google** (formato `https://SEU-PROJETO.supabase.co/auth/v1/callback`).
 3. Copie o **Client ID** e **Client Secret** gerados e cole em **Authentication → Providers → Google** no Supabase, habilitando o provider.
+4. Em **Authentication → URL Configuration**, configure (senão o Supabase redireciona o login de volta para `localhost:3000` por padrão):
+   - **Site URL**: `https://SEU-USUARIO.github.io/formula-intima/`
+   - **Redirect URLs**: `https://SEU-USUARIO.github.io/formula-intima/**`
+5. O app OAuth do Google começa em modo de teste (só contas cadastradas como "usuários de teste" conseguem logar). Para liberar para qualquer cliente, vá em **Google Auth Platform → Público-alvo** e clique em **Publicar app**.
 
 ### 3. Configurar Mercado Pago
 
