@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
+/* Paleta aproximada a partir do logo e do Instagram @formula.intima:
+   tons de "rosa chá" (dusty rose), sem roxo, com um dourado/bege suave
+   como acento (aparece no fundo de madeira das fotos de produto). */
 @theme {
-  --color-brand-black: #1a1015;
-  --color-brand-plum: #3b1225;
-  --color-brand-rose: #b5476b;
-  --color-brand-rose-light: #f7d9e2;
-  --color-brand-gold: #c9a24b;
-  --color-brand-cream: #fbf5f2;
+  --color-brand-black: #2b1620;
+  --color-brand-plum: #9c4a68;
+  --color-brand-rose: #cf87a6;
+  --color-brand-rose-light: #f9e3ec;
+  --color-brand-gold: #c9a876;
+  --color-brand-cream: #fdf6f5;
   --font-sans: 'Segoe UI', system-ui, sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
 }
