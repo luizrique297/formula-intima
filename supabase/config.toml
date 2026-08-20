@@ -5,3 +5,9 @@ verify_jwt = true
 
 [functions.mp-webhook]
 verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-order-email]
+verify_jwt = false
