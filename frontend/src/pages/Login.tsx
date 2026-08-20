@@ -11,7 +11,7 @@ export function Login() {
   const [info, setInfo] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const { signInWithPassword, signUpWithPassword, signInWithGoogle, signInWithFacebook } = useAuth()
+  const { signInWithPassword, signUpWithPassword, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
@@ -47,12 +47,6 @@ export function Login() {
           className="flex items-center justify-center gap-2 rounded-full border border-brand-rose-light bg-white py-2.5 text-sm font-medium text-brand-black hover:bg-brand-rose-light"
         >
           Continuar com Google
-        </button>
-        <button
-          onClick={signInWithFacebook}
-          className="flex items-center justify-center gap-2 rounded-full border border-brand-rose-light bg-white py-2.5 text-sm font-medium text-brand-black hover:bg-brand-rose-light"
-        >
-          Continuar com Facebook
         </button>
       </div>
 

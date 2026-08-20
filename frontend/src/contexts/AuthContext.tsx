@@ -12,7 +12,6 @@ interface AuthContextValue {
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>
   signUpWithPassword: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>
   signInWithGoogle: () => Promise<void>
-  signInWithFacebook: () => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -72,13 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  async function signInWithFacebook() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'facebook',
-      options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
-    })
-  }
-
   async function signOut() {
     await supabase.auth.signOut()
   }
@@ -96,7 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithPassword,
     signUpWithPassword,
     signInWithGoogle,
-    signInWithFacebook,
     signOut,
     refreshProfile,
   }
