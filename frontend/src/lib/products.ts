@@ -18,9 +18,9 @@ export async function fetchActiveProducts(opts?: {
 }): Promise<ProductListItem[]> {
   let query = supabase.from('products').select('*, categories(slug)').eq('is_active', true)
 
-  if (opts?.categorySlug) {
-    query = query.eq('categories.slug', opts.categorySlug)
-  }
+  // Filtro por categoria é aplicado depois, em memória (linha ~44): o PostgREST
+  // não filtra a linha principal por coluna de uma tabela embutida sem `!inner`,
+  // então um `.eq('categories.slug', ...)` aqui seria silenciosamente ignorado.
   if (opts?.search) {
     query = query.ilike('name', `%${opts.search}%`)
   }

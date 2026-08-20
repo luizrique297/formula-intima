@@ -11,4 +11,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Sem generic de schema: os tipos das tabelas (em ../types/database) são aplicados
 // manualmente em cada função de lib/*.ts, já que não geramos types via Supabase CLI.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+//
+// flowType 'pkce' é obrigatório aqui: o app usa HashRouter (exigido pelo GitHub
+// Pages, que não suporta roteamento do lado do servidor) e o fluxo padrão de OAuth
+// devolveria o token no fragmento da URL (#access_token=...), que colidiria direto
+// com as rotas do HashRouter. Com PKCE o retorno vem como querystring (?code=...),
+// antes do #, então router e autenticação não se pisam.
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { flowType: 'pkce' },
+})

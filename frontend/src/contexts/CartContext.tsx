@@ -61,9 +61,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       .select('variant_id, quantity')
       .in('variant_id', variantIds)
 
+    const productIds = [...new Set((variants ?? []).map((v: any) => v.product_id))]
     const { data: images } = await supabase
       .from('product_images')
       .select('product_id, storage_path, position')
+      .in('product_id', productIds.length > 0 ? productIds : ['00000000-0000-0000-0000-000000000000'])
       .order('position', { ascending: true })
 
     const inventoryMap = new Map((inventoryRows ?? []).map((r) => [r.variant_id, r.quantity]))
