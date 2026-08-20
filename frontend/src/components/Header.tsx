@@ -17,8 +17,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-brand-rose-light bg-brand-cream/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to="/" className="font-serif text-xl tracking-wide text-brand-plum">
-          Fórmula Íntima
+        <Link to="/" className="flex items-center gap-2">
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Fórmula Íntima" className="h-11 w-11 rounded-full" />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-brand-black/80 md:flex">
