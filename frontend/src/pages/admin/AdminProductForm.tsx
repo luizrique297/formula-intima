@@ -35,6 +35,7 @@ export function AdminProductForm() {
   const [isSensitive, setIsSensitive] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadColor, setUploadColor] = useState('')
 
   useEffect(() => {
     fetchCategories().then(setCategories)
@@ -88,10 +89,12 @@ export function AdminProductForm() {
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (!product || !e.target.files?.[0]) return
     const file = e.target.files[0]
-    const img = await uploadProductImage(product.id, file, images.length)
+    const img = await uploadProductImage(product.id, file, images.length, uploadColor || null)
     setImages((prev) => [...prev, img])
     e.target.value = ''
   }
+
+  const distinctColors = [...new Set(variants.map((v) => v.color).filter((c): c is string => !!c))]
 
   async function handleImageDelete(img: ProductImage) {
     await deleteProductImage(img)
@@ -170,12 +173,24 @@ export function AdminProductForm() {
 
       {!isNew && product && (
         <>
-          <section className="mb-8">
+          <VariantsSection productId={product.id} variants={variants} setVariants={setVariants} />
+
+          <section className="mb-8 mt-8">
             <h2 className="mb-3 text-lg font-medium">Fotos</h2>
+            <p className="mb-3 text-sm text-brand-black/60">
+              Se o produto tiver variantes de cor diferentes, associe cada foto à cor certa — a página do produto
+              troca a imagem automaticamente quando a cliente escolhe a cor. Fotos sem cor definida aparecem para
+              qualquer cor que ainda não tenha foto própria.
+            </p>
             <div className="mb-3 flex flex-wrap gap-3">
               {images.map((img) => (
                 <div key={img.id} className="relative h-24 w-24 overflow-hidden rounded-lg border border-brand-rose-light">
                   <img src={publicImageUrl(img.storage_path)} alt="" className="h-full w-full object-cover" />
+                  {img.color && (
+                    <span className="absolute bottom-0 left-0 right-0 truncate bg-black/50 px-1 text-center text-[10px] text-white">
+                      {img.color}
+                    </span>
+                  )}
                   <button
                     onClick={() => handleImageDelete(img)}
                     className="absolute right-1 top-1 rounded-full bg-white px-1.5 text-xs text-red-600 shadow"
@@ -185,10 +200,22 @@ export function AdminProductForm() {
                 </div>
               ))}
             </div>
-            <input type="file" accept="image/*" onChange={handleImageUpload} className="text-sm" />
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={uploadColor}
+                onChange={(e) => setUploadColor(e.target.value)}
+                className="rounded-lg border border-brand-rose-light px-2 py-1.5 text-sm"
+              >
+                <option value="">Todas as cores (genérica)</option>
+                {distinctColors.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="text-sm" />
+            </div>
           </section>
-
-          <VariantsSection productId={product.id} variants={variants} setVariants={setVariants} />
         </>
       )}
     </div>

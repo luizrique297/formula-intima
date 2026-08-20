@@ -61,7 +61,12 @@ export async function updateProduct(id: string, input: Partial<ProductFormInput>
   if (error) throw error
 }
 
-export async function uploadProductImage(productId: string, file: File, position: number): Promise<ProductImage> {
+export async function uploadProductImage(
+  productId: string,
+  file: File,
+  position: number,
+  color: string | null,
+): Promise<ProductImage> {
   const ext = file.name.split('.').pop()
   const path = `${productId}/${crypto.randomUUID()}.${ext}`
   const { error: uploadError } = await supabase.storage.from('product-images').upload(path, file)
@@ -69,7 +74,7 @@ export async function uploadProductImage(productId: string, file: File, position
 
   const { data, error } = await supabase
     .from('product_images')
-    .insert({ product_id: productId, storage_path: path, position })
+    .insert({ product_id: productId, storage_path: path, position, color })
     .select()
     .single()
   if (error) throw error

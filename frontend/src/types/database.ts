@@ -60,6 +60,7 @@ export interface ProductImage {
   product_id: string
   storage_path: string
   position: number
+  color: string | null
   created_at: string
 }
 
