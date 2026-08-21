@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { fetchAddresses, createAddress, type NewAddress } from '../lib/addresses'
 import { fetchShippingRateByUf } from '../lib/shipping'
+import { validateCoupon } from '../lib/coupons'
 import { supabase } from '../lib/supabase'
 import { formatPriceCents } from '../lib/format'
 import { AddressForm } from '../components/AddressForm'
@@ -18,6 +19,11 @@ export function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [shippingCents, setShippingCents] = useState<number | null>(null)
+
+  const [couponInput, setCouponInput] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountCents: number } | null>(null)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [applyingCoupon, setApplyingCoupon] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -46,12 +52,32 @@ export function Checkout() {
     setShowForm(false)
   }
 
+  async function handleApplyCoupon() {
+    if (!couponInput.trim()) return
+    setApplyingCoupon(true)
+    setCouponError(null)
+    const result = await validateCoupon(couponInput.trim(), totalCents + (shippingCents ?? 0))
+    setApplyingCoupon(false)
+    if (!result.valid) {
+      setCouponError(result.message ?? 'Cupom inválido.')
+      setAppliedCoupon(null)
+      return
+    }
+    setAppliedCoupon({ code: result.code!, discountCents: result.discount_cents! })
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null)
+    setCouponInput('')
+    setCouponError(null)
+  }
+
   async function handleConfirm() {
     if (!selectedAddressId) return
     setSubmitting(true)
     setError(null)
     const { data, error: fnError } = await supabase.functions.invoke('create-payment', {
-      body: { address_id: selectedAddressId },
+      body: { address_id: selectedAddressId, coupon_code: appliedCoupon?.code ?? null },
     })
     setSubmitting(false)
 
@@ -105,6 +131,38 @@ export function Checkout() {
       </section>
 
       <section className="mb-8">
+        <h2 className="mb-3 text-lg font-medium">Cupom de desconto</h2>
+        {appliedCoupon ? (
+          <div className="flex items-center justify-between rounded-xl border border-brand-rose bg-brand-rose-light/40 p-3 text-sm">
+            <span>
+              Cupom <strong>{appliedCoupon.code}</strong> aplicado: -{formatPriceCents(appliedCoupon.discountCents)}
+            </span>
+            <button onClick={handleRemoveCoupon} className="text-brand-rose hover:underline">
+              Remover
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Código do cupom"
+              value={couponInput}
+              onChange={(e) => setCouponInput(e.target.value)}
+              className="flex-1 rounded-lg border border-brand-rose-light px-3 py-2 text-sm"
+            />
+            <button
+              onClick={handleApplyCoupon}
+              disabled={applyingCoupon}
+              className="rounded-lg bg-brand-rose px-4 py-2 text-sm text-white hover:bg-brand-plum disabled:opacity-60"
+            >
+              {applyingCoupon ? '...' : 'Aplicar'}
+            </button>
+          </div>
+        )}
+        {couponError && <p className="mt-2 text-sm text-red-600">{couponError}</p>}
+      </section>
+
+      <section className="mb-8">
         <h2 className="mb-3 text-lg font-medium">Resumo</h2>
         <div className="rounded-xl border border-brand-rose-light bg-white p-4">
           {lines.map((line) => {
@@ -128,9 +186,17 @@ export function Checkout() {
                   : formatPriceCents(shippingCents)}
             </span>
           </div>
+          {appliedCoupon && (
+            <div className="flex justify-between py-1 text-sm text-brand-rose">
+              <span>Desconto ({appliedCoupon.code})</span>
+              <span>-{formatPriceCents(appliedCoupon.discountCents)}</span>
+            </div>
+          )}
           <div className="mt-2 flex justify-between border-t border-brand-rose-light pt-2 font-medium">
             <span>Total</span>
-            <span className="text-brand-rose">{formatPriceCents(totalCents + (shippingCents ?? 0))}</span>
+            <span className="text-brand-rose">
+              {formatPriceCents(Math.max(0, totalCents + (shippingCents ?? 0) - (appliedCoupon?.discountCents ?? 0)))}
+            </span>
           </div>
         </div>
       </section>

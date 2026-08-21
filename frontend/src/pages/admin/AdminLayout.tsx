@@ -22,6 +22,9 @@ export function AdminLayout() {
         <NavLink to="/admin/devolucoes" className={linkClass}>
           Devoluções
         </NavLink>
+        <NavLink to="/admin/cupons" className={linkClass}>
+          Cupons
+        </NavLink>
         <NavLink to="/admin/pedidos" className={linkClass}>
           Pedidos
         </NavLink>

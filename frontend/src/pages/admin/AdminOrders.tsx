@@ -87,6 +87,12 @@ export function AdminOrders() {
                 <span>Frete</span>
                 <span>{order.shipping_cents === 0 ? 'Grátis' : formatPriceCents(order.shipping_cents)}</span>
               </div>
+              {order.discount_cents > 0 && (
+                <div className="flex justify-between py-0.5 text-brand-rose">
+                  <span>Desconto {order.coupon_code && `(${order.coupon_code})`}</span>
+                  <span>-{formatPriceCents(order.discount_cents)}</span>
+                </div>
+              )}
             </div>
             <p className="mt-2 text-right font-medium text-brand-rose">{formatPriceCents(order.total_cents)}</p>
           </div>

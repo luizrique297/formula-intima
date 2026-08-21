@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     if (userError || !userData.user) throw new Error('Sessão inválida.')
     const userId = userData.user.id
 
-    const { address_id } = await req.json()
+    const { address_id, coupon_code } = await req.json()
     if (!address_id) throw new Error('Endereço não informado.')
 
     const { data: address } = await supabase
@@ -82,7 +82,25 @@ Deno.serve(async (req) => {
       totalCents += unitPrice * item.quantity
     }
 
-    const totalWithShippingCents = totalCents + shippingCents
+    const subtotalWithShippingCents = totalCents + shippingCents
+
+    // Cupom validado no servidor (nunca confia no desconto que o navegador
+    // possa ter calculado) — a mesma function usada para pré-visualizar o
+    // desconto no checkout, aqui reaplicada como fonte da verdade.
+    let discountCents = 0
+    let appliedCouponCode: string | null = null
+    if (coupon_code) {
+      const { data: couponResult } = await supabase.rpc('validate_coupon', {
+        p_code: coupon_code,
+        p_total_cents: subtotalWithShippingCents,
+      })
+      if (couponResult?.valid) {
+        discountCents = couponResult.discount_cents
+        appliedCouponCode = couponResult.code
+      }
+    }
+
+    const totalWithShippingCents = Math.max(0, subtotalWithShippingCents - discountCents)
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -92,10 +110,16 @@ Deno.serve(async (req) => {
         status: 'aguardando_pagamento',
         total_cents: totalWithShippingCents,
         shipping_cents: shippingCents,
+        coupon_code: appliedCouponCode,
+        discount_cents: discountCents,
       })
       .select()
       .single()
     if (orderError || !order) throw new Error('Não foi possível criar o pedido.')
+
+    if (appliedCouponCode) {
+      await supabase.rpc('increment_coupon_usage', { p_code: appliedCouponCode })
+    }
 
     const itemsToInsert = orderItems.map((i) => ({ ...i, order_id: order.id }))
     await supabase.from('order_items').insert(itemsToInsert)
@@ -108,6 +132,14 @@ Deno.serve(async (req) => {
     }))
     if (shippingCents > 0) {
       mpItems.push({ title: 'Frete', quantity: 1, unit_price: shippingCents / 100, currency_id: 'BRL' })
+    }
+    if (discountCents > 0) {
+      mpItems.push({
+        title: `Desconto (${appliedCouponCode})`,
+        quantity: 1,
+        unit_price: -discountCents / 100,
+        currency_id: 'BRL',
+      })
     }
 
     const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
