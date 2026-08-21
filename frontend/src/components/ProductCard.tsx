@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { formatPriceCents, publicImageUrl } from '../lib/format'
+import { FavoriteButton } from './FavoriteButton'
 import type { Product, ProductImage } from '../types/database'
 
 interface Props {
@@ -14,7 +15,8 @@ export function ProductCard({ product, image, basePath }: Props) {
       to={`${basePath}/produto/${product.slug}`}
       className="group block overflow-hidden rounded-xl border border-brand-rose-light bg-white transition hover:shadow-lg"
     >
-      <div className="aspect-square overflow-hidden bg-brand-rose-light">
+      <div className="relative aspect-square overflow-hidden bg-brand-rose-light">
+        <FavoriteButton productId={product.id} className="absolute right-2 top-2 z-10" />
         {image ? (
           <img
             src={publicImageUrl(image.storage_path)}

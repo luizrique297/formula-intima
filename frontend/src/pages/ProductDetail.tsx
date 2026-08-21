@@ -4,6 +4,7 @@ import { fetchProductBySlug } from '../lib/products'
 import { formatPriceCents, publicImageUrl } from '../lib/format'
 import { useCart } from '../contexts/CartContext'
 import { ShippingCalculator } from '../components/ShippingCalculator'
+import { FavoriteButton } from '../components/FavoriteButton'
 import type { ProductWithDetails } from '../types/database'
 
 export function ProductDetail() {
@@ -102,8 +103,13 @@ export function ProductDetail() {
       </div>
 
       <div>
-        {product.category && <p className="mb-1 text-sm text-brand-rose">{product.category.name}</p>}
-        <h1 className="font-serif text-2xl text-brand-plum">{product.name}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            {product.category && <p className="mb-1 text-sm text-brand-rose">{product.category.name}</p>}
+            <h1 className="font-serif text-2xl text-brand-plum">{product.name}</h1>
+          </div>
+          <FavoriteButton productId={product.id} className="border border-brand-rose-light" />
+        </div>
         <p className="mt-2 font-serif text-2xl text-brand-black">{formatPriceCents(price)}</p>
 
         {product.description && <p className="mt-4 whitespace-pre-line text-sm text-brand-black/80">{product.description}</p>}

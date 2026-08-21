@@ -69,6 +69,13 @@ export function Header() {
                   >
                     Meus pedidos
                   </Link>
+                  <Link
+                    to="/favoritos"
+                    className="block px-4 py-2 text-sm hover:bg-brand-rose-light"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Meus favoritos
+                  </Link>
                   <button
                     onClick={handleSignOut}
                     className="block w-full px-4 py-2 text-left text-sm hover:bg-brand-rose-light"

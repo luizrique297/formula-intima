@@ -10,6 +10,7 @@ import { Checkout } from './pages/Checkout'
 import { OrderStatus } from './pages/OrderStatus'
 import { Orders } from './pages/Orders'
 import { Account } from './pages/Account'
+import { Favorites } from './pages/Favorites'
 import { Login } from './pages/Login'
 import { Privacy } from './pages/Privacy'
 import { Terms } from './pages/Terms'
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="checkout" element={<Checkout />} />
             <Route path="minha-conta" element={<Account />} />
             <Route path="minha-conta/pedidos" element={<Orders />} />
+            <Route path="favoritos" element={<Favorites />} />
           </Route>
 
           <Route element={<AdminRoute />}>
