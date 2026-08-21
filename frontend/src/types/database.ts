@@ -96,6 +96,7 @@ export interface Order {
   total_cents: number
   shipping_cents: number
   delivered_at: string | null
+  tracking_code: string | null
   created_at: string
   updated_at: string
 }

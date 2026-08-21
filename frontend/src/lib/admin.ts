@@ -145,6 +145,14 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
   if (error) throw error
 }
 
+export async function updateOrderTrackingCode(orderId: string, trackingCode: string): Promise<void> {
+  const { error } = await supabase
+    .from('orders')
+    .update({ tracking_code: trackingCode || null, updated_at: new Date().toISOString() })
+    .eq('id', orderId)
+  if (error) throw error
+}
+
 export interface AdminReturnRequest extends ReturnRequest {
   orders: { id: string; total_cents: number } | null
   profiles: { full_name: string | null } | null

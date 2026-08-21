@@ -95,8 +95,14 @@ Deno.serve(async (req) => {
     const order = payload.record
     const oldOrder = payload.old_record
 
-    if (payload.type === 'UPDATE' && oldOrder?.status === order.status) {
-      return new Response('status unchanged, skipped', { status: 200, headers: corsHeaders })
+    const statusChanged = payload.type === 'UPDATE' && oldOrder?.status !== order.status
+    // Também avisa quando o código de rastreio é adicionado depois (ex: admin
+    // marca "enviado" primeiro e só depois consegue o código dos Correios) —
+    // sem isso a cliente nunca saberia que o código ficou disponível.
+    const trackingAdded = payload.type === 'UPDATE' && !oldOrder?.tracking_code && order.tracking_code
+
+    if (payload.type === 'UPDATE' && !statusChanged && !trackingAdded) {
+      return new Response('nothing relevant changed, skipped', { status: 200, headers: corsHeaders })
     }
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
@@ -126,11 +132,18 @@ Deno.serve(async (req) => {
       await sendEmail(email, 'Recebemos seu pedido 💗', html)
     } else {
       const label = STATUS_LABEL[order.status] ?? order.status
-      const message = STATUS_MESSAGE[order.status] ?? 'O status do seu pedido foi atualizado.'
+      const message = statusChanged
+        ? (STATUS_MESSAGE[order.status] ?? 'O status do seu pedido foi atualizado.')
+        : 'Já temos o código de rastreio do seu pedido!'
+      const tracking = order.tracking_code
+        ? `<p style="margin-top:12px;">Código de rastreio: <strong>${order.tracking_code}</strong><br/>
+           <a href="https://rastreamento.correios.com.br/app/index.php?objetos=${order.tracking_code}" style="color:#9c4a68;">Rastrear no site dos Correios</a></p>`
+        : ''
       const html = wrapper(
         `${name}, novidade no seu pedido!`,
         `<p>${message}</p>
          <p style="margin-top:16px; padding: 8px 16px; background: #faeef2; border-radius: 999px; display: inline-block; color: #9c4a68; font-weight: bold;">${label}</p>
+         ${tracking}
          <p style="color:#8a7078; font-size:13px; margin-top:16px;">Número do pedido: ${order.id}</p>`,
       )
       await sendEmail(email, `Seu pedido: ${label}`, html)

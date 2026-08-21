@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchOrdersAdmin, updateOrderStatus, type AdminOrder } from '../../lib/admin'
+import { fetchOrdersAdmin, updateOrderStatus, updateOrderTrackingCode, type AdminOrder } from '../../lib/admin'
 import { ORDER_STATUS_LABEL } from '../../lib/orders'
 import { formatPriceCents } from '../../lib/format'
 import type { OrderStatus } from '../../types/database'
@@ -9,6 +9,7 @@ const STATUS_OPTIONS: OrderStatus[] = ['aguardando_pagamento', 'pago', 'em_separ
 export function AdminOrders() {
   const [orders, setOrders] = useState<AdminOrder[]>([])
   const [loading, setLoading] = useState(true)
+  const [savingTrackingId, setSavingTrackingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchOrdersAdmin()
@@ -19,6 +20,13 @@ export function AdminOrders() {
   async function handleStatusChange(orderId: string, status: OrderStatus) {
     await updateOrderStatus(orderId, status)
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)))
+  }
+
+  async function handleTrackingSave(orderId: string, trackingCode: string) {
+    setSavingTrackingId(orderId)
+    await updateOrderTrackingCode(orderId, trackingCode)
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, tracking_code: trackingCode || null } : o)))
+    setSavingTrackingId(null)
   }
 
   if (loading) return <p className="text-brand-black/60">Carregando…</p>
@@ -54,6 +62,17 @@ export function AdminOrders() {
                 {order.addresses.state}
               </p>
             )}
+
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Código de rastreio"
+                defaultValue={order.tracking_code ?? ''}
+                onBlur={(e) => handleTrackingSave(order.id, e.target.value)}
+                className="rounded-lg border border-brand-rose-light px-2 py-1 text-xs"
+              />
+              {savingTrackingId === order.id && <span className="text-xs text-brand-black/50">salvando…</span>}
+            </div>
 
             <div className="mt-2 border-t border-brand-rose-light pt-2 text-sm">
               {order.order_items.map((item) => (

@@ -52,6 +52,21 @@ export function OrderStatus() {
         </p>
       )}
 
+      {order.tracking_code && (
+        <div className="mb-6 rounded-xl border border-brand-rose-light bg-white p-4 text-left text-sm">
+          <p className="font-medium text-brand-plum">Código de rastreio</p>
+          <p className="mt-1">{order.tracking_code}</p>
+          <a
+            href={`https://rastreamento.correios.com.br/app/index.php?objetos=${order.tracking_code}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-block text-brand-rose hover:underline"
+          >
+            Rastrear no site dos Correios →
+          </a>
+        </div>
+      )}
+
       <div className="mb-6 rounded-xl border border-brand-rose-light bg-white p-4 text-left">
         {order.order_items.map((item) => (
           <div key={item.id} className="flex justify-between py-1 text-sm">
