@@ -82,8 +82,8 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_MESSAGE: Record<string, string> = {
   pago: 'Recebemos a confirmação do seu pagamento! Já estamos preparando seu pedido.',
   em_separacao: 'Seu pedido está sendo separado com todo o cuidado.',
-  enviado: 'Seu pedido foi enviado e está a caminho, em embalagem discreta.',
-  entregue: 'Seu pedido foi entregue. Esperamos que você ame!',
+  enviado: 'Seu pedido foi postado nos Correios e está a caminho, em embalagem discreta — ainda não chegou até você, mas já dá para acompanhar pelo código de rastreio abaixo.',
+  entregue: 'Seu pedido chegou até você! Esperamos que você ame.',
   cancelado: 'Seu pedido foi cancelado. Se não esperava por isso, é só responder este e-mail.',
 }
 
