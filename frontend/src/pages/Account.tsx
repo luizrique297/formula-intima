@@ -22,6 +22,7 @@ export function Account() {
   const [loadingAddresses, setLoadingAddresses] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [addingNew, setAddingNew] = useState(false)
+  const [addressError, setAddressError] = useState<string | null>(null)
 
   useEffect(() => {
     setFullName(profile?.full_name ?? '')
@@ -60,8 +61,13 @@ export function Account() {
   }
 
   async function handleDeleteAddress(id: string) {
-    await deleteAddress(id)
-    setAddresses((prev) => prev.filter((a) => a.id !== id))
+    setAddressError(null)
+    try {
+      await deleteAddress(id)
+      setAddresses((prev) => prev.filter((a) => a.id !== id))
+    } catch {
+      setAddressError('Não foi possível excluir: este endereço está associado a um ou mais pedidos já feitos.')
+    }
   }
 
   return (
@@ -108,6 +114,7 @@ export function Account() {
 
       <section>
         <h2 className="mb-3 text-lg font-medium text-brand-plum">Endereços salvos</h2>
+        {addressError && <p className="mb-3 text-sm text-red-600">{addressError}</p>}
 
         {loadingAddresses ? (
           <p className="text-sm text-brand-black/60">Carregando…</p>
