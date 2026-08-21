@@ -73,8 +73,11 @@ export function ReturnRequestSection({ order }: Props) {
       {!showForm ? (
         <>
           <p className="text-sm text-brand-black/70">
-            Você tem até {RETURN_DEADLINE_DAYS} dias após a entrega para solicitar devolução, sem precisar
-            justificar (direito de arrependimento).
+            Você tem até {RETURN_DEADLINE_DAYS} dias após a entrega para solicitar devolução.
+          </p>
+          <p className="mt-2 text-sm font-bold text-brand-plum">
+            A peça só pode ser devolvida se não tiver sido usada/vestida e estiver com etiquetas e lacre de higiene
+            intactos.
           </p>
           <button
             onClick={() => setShowForm(true)}
@@ -86,6 +89,10 @@ export function ReturnRequestSection({ order }: Props) {
       ) : (
         <form onSubmit={handleSubmit} className="grid gap-3">
           <p className="text-sm font-medium text-brand-plum">Solicitar devolução</p>
+          <p className="text-sm font-bold text-brand-plum">
+            Confirme que a peça não foi usada/vestida e está com etiquetas e lacre de higiene intactos — devoluções
+            fora dessa condição não são aceitas.
+          </p>
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value)}

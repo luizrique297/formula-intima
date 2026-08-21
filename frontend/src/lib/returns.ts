@@ -28,7 +28,7 @@ export async function createReturnRequest(
 
 export const RETURN_REASON_LABEL: Record<string, string> = {
   nao_gostei: 'Não gostei do produto',
-  tamanho_errado: 'Tamanho ou caimento errado',
+  tamanho_errado: 'Recebi o tamanho errado do que pedi',
   defeito: 'Veio com defeito',
   outro: 'Outro motivo',
 }
