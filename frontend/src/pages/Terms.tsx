@@ -23,8 +23,14 @@ export function Terms() {
 
       <h2 className="mb-2 mt-6 font-medium text-brand-plum">4. Trocas e devoluções</h2>
       <p className="mb-4">
-        Por se tratar de produtos íntimos, trocas e devoluções seguem critérios de higiene e segurança sanitária,
-        respeitando o Código de Defesa do Consumidor.
+        Você tem até <strong>7 (sete) dias corridos</strong> após o recebimento do produto para solicitar a
+        devolução por arrependimento, sem precisar justificar o motivo, conforme o Código de Defesa do Consumidor
+        (art. 49). A solicitação pode ser feita direto pela sua conta, na página do pedido.
+      </p>
+      <p className="mb-4">
+        Por se tratar de produtos íntimos, a devolução só é aceita se o produto não tiver sido usado e estiver com
+        a embalagem, etiquetas e lacres de higiene originais intactos — por questão de segurança sanitária, esse
+        cuidado vale tanto para você quanto para as próximas clientes.
       </p>
 
       <h2 className="mb-2 mt-6 font-medium text-brand-plum">5. Discrição</h2>

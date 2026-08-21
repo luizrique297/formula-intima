@@ -9,6 +9,8 @@ import type {
   Product,
   ProductImage,
   ProductVariant,
+  ReturnRequest,
+  ReturnStatus,
 } from '../types/database'
 
 export async function fetchAllProductsAdmin(): Promise<(Product & { categories: Category | null })[]> {
@@ -140,6 +142,32 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
     .from('orders')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', orderId)
+  if (error) throw error
+}
+
+export interface AdminReturnRequest extends ReturnRequest {
+  orders: { id: string; total_cents: number } | null
+  profiles: { full_name: string | null } | null
+}
+
+export async function fetchReturnRequestsAdmin(): Promise<AdminReturnRequest[]> {
+  const { data, error } = await supabase
+    .from('return_requests')
+    .select('*, orders(id, total_cents), profiles(full_name)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as any
+}
+
+export async function updateReturnRequestStatus(
+  id: string,
+  status: ReturnStatus,
+  adminNotes: string | null,
+): Promise<void> {
+  const { error } = await supabase
+    .from('return_requests')
+    .update({ status, admin_notes: adminNotes, updated_at: new Date().toISOString() })
+    .eq('id', id)
   if (error) throw error
 }
 

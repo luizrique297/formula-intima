@@ -19,6 +19,9 @@ export function AdminLayout() {
         <NavLink to="/admin/frete" className={linkClass}>
           Frete
         </NavLink>
+        <NavLink to="/admin/devolucoes" className={linkClass}>
+          Devoluções
+        </NavLink>
         <NavLink to="/admin/pedidos" className={linkClass}>
           Pedidos
         </NavLink>

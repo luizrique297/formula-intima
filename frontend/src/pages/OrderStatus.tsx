@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { fetchOrderById, ORDER_STATUS_LABEL, type OrderWithItems } from '../lib/orders'
 import { formatPriceCents } from '../lib/format'
+import { ReturnRequestSection } from '../components/ReturnRequestSection'
 
 export function OrderStatus() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -70,9 +71,15 @@ export function OrderStatus() {
         </div>
       </div>
 
-      <Link to="/minha-conta/pedidos" className="text-sm text-brand-rose hover:underline">
-        Ver meus pedidos
-      </Link>
+      <div className="text-left">
+        <ReturnRequestSection order={order} />
+      </div>
+
+      <p className="mt-6">
+        <Link to="/minha-conta/pedidos" className="text-sm text-brand-rose hover:underline">
+          Ver meus pedidos
+        </Link>
+      </p>
     </div>
   )
 }

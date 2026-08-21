@@ -95,6 +95,21 @@ export interface Order {
   status: OrderStatus
   total_cents: number
   shipping_cents: number
+  delivered_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ReturnStatus = 'solicitado' | 'aprovado' | 'rejeitado' | 'concluido'
+
+export interface ReturnRequest {
+  id: string
+  order_id: string
+  user_id: string
+  reason: string
+  comment: string | null
+  status: ReturnStatus
+  admin_notes: string | null
   created_at: string
   updated_at: string
 }
