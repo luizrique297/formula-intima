@@ -22,3 +22,14 @@ export async function createAddress(userId: string, address: NewAddress): Promis
   if (error) throw error
   return data as Address
 }
+
+export async function updateAddress(id: string, address: NewAddress): Promise<Address> {
+  const { data, error } = await supabase.from('addresses').update(address).eq('id', id).select().single()
+  if (error) throw error
+  return data as Address
+}
+
+export async function deleteAddress(id: string): Promise<void> {
+  const { error } = await supabase.from('addresses').delete().eq('id', id)
+  if (error) throw error
+}

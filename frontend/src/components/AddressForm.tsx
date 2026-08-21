@@ -5,6 +5,7 @@ import { lookupCep } from '../lib/shipping'
 interface Props {
   onSave: (address: NewAddress) => Promise<void>
   onCancel: () => void
+  initialValue?: NewAddress
 }
 
 const emptyForm: NewAddress = {
@@ -19,8 +20,8 @@ const emptyForm: NewAddress = {
   postal_code: '',
 }
 
-export function AddressForm({ onSave, onCancel }: Props) {
-  const [form, setForm] = useState<NewAddress>(emptyForm)
+export function AddressForm({ onSave, onCancel, initialValue }: Props) {
+  const [form, setForm] = useState<NewAddress>(initialValue ?? emptyForm)
   const [saving, setSaving] = useState(false)
   const [cepLoading, setCepLoading] = useState(false)
   const [cepError, setCepError] = useState<string | null>(null)
@@ -135,7 +136,7 @@ export function AddressForm({ onSave, onCancel }: Props) {
           disabled={saving}
           className="flex-1 rounded-full bg-brand-rose py-2 text-sm font-medium text-white hover:bg-brand-plum disabled:opacity-60"
         >
-          {saving ? 'Salvando…' : 'Salvar endereço'}
+          {saving ? 'Salvando…' : initialValue ? 'Salvar alterações' : 'Salvar endereço'}
         </button>
         <button type="button" onClick={onCancel} className="rounded-full border border-brand-rose-light px-4 py-2 text-sm">
           Cancelar
