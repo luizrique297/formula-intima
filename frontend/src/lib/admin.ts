@@ -13,6 +13,37 @@ import type {
   ReturnStatus,
 } from '../types/database'
 
+export const LOW_STOCK_THRESHOLD = 3
+
+export interface LowStockVariant {
+  variant_id: string
+  quantity: number
+  size: string | null
+  color: string | null
+  product_id: string
+  product_name: string
+}
+
+export async function fetchLowStockVariants(): Promise<LowStockVariant[]> {
+  const { data, error } = await supabase
+    .from('inventory')
+    .select('variant_id, quantity, product_variants(size, color, product_id, products(name, is_active))')
+    .lte('quantity', LOW_STOCK_THRESHOLD)
+    .order('quantity', { ascending: true })
+  if (error) throw error
+
+  return (data ?? [])
+    .filter((row: any) => row.product_variants?.products?.is_active)
+    .map((row: any) => ({
+      variant_id: row.variant_id,
+      quantity: row.quantity,
+      size: row.product_variants.size,
+      color: row.product_variants.color,
+      product_id: row.product_variants.product_id,
+      product_name: row.product_variants.products.name,
+    }))
+}
+
 export async function fetchAllProductsAdmin(): Promise<(Product & { categories: Category | null })[]> {
   const { data, error } = await supabase
     .from('products')

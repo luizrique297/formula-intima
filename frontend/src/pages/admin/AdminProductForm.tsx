@@ -6,6 +6,7 @@ import {
   deleteProductImage,
   deleteVariant,
   fetchProductForEdit,
+  LOW_STOCK_THRESHOLD,
   slugify,
   updateProduct,
   updateVariantStock,
@@ -303,7 +304,11 @@ function VariantsSection({
                       min={0}
                       defaultValue={v.inventory?.quantity ?? 0}
                       onBlur={(e) => handleStockChange(v.id, parseInt(e.target.value, 10) || 0)}
-                      className="w-20 rounded border border-brand-rose-light px-2 py-1"
+                      className={`w-20 rounded border px-2 py-1 ${
+                        (v.inventory?.quantity ?? 0) <= LOW_STOCK_THRESHOLD
+                          ? 'border-amber-400 bg-amber-50 text-amber-900'
+                          : 'border-brand-rose-light'
+                      }`}
                     />
                   </td>
                   <td className="p-3">
