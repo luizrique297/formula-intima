@@ -5,6 +5,7 @@ import { formatPriceCents, publicImageUrl } from '../lib/format'
 import { useCart } from '../contexts/CartContext'
 import { ShippingCalculator } from '../components/ShippingCalculator'
 import { FavoriteButton } from '../components/FavoriteButton'
+import { ProductReviews } from '../components/ProductReviews'
 import type { ProductWithDetails } from '../types/database'
 
 export function ProductDetail() {
@@ -76,8 +77,9 @@ export function ProductDetail() {
   }
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      <div className="grid gap-3">
+    <div>
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-3">
         <div className="aspect-square overflow-hidden rounded-xl bg-brand-rose-light">
           {mainImage ? (
             <img src={publicImageUrl(mainImage.storage_path)} alt={product.name} className="h-full w-full object-cover" />
@@ -167,6 +169,9 @@ export function ProductDetail() {
           <ShippingCalculator />
         </div>
       </div>
+    </div>
+
+    <ProductReviews productId={product.id} />
     </div>
   )
 }

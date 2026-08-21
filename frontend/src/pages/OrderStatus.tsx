@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { fetchOrderById, ORDER_STATUS_LABEL, type OrderWithItems } from '../lib/orders'
 import { formatPriceCents } from '../lib/format'
 import { ReturnRequestSection } from '../components/ReturnRequestSection'
+import { ReviewSection } from '../components/ReviewSection'
 
 export function OrderStatus() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -87,6 +88,7 @@ export function OrderStatus() {
       </div>
 
       <div className="text-left">
+        <ReviewSection order={order} />
         <ReturnRequestSection order={order} />
       </div>
 
