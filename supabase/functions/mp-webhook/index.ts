@@ -3,20 +3,70 @@
 // a API do Mercado Pago pelo id recebido (nunca confia em dados enviados direto no
 // corpo da notificação), depois marca o pedido como pago e baixa o estoque.
 //
-// TODO (fazer quando a conta de produção do Mercado Pago for configurada):
-// validar a assinatura HMAC do header "x-signature" usando a "Chave secreta"
-// do webhook (painel do MP > Suas integrações > Webhooks), comparando com um
-// HMAC-SHA256 do manifest "id:{data.id};request-id:{x-request-id};ts:{ts};".
-// Não é crítico hoje porque a lógica já reconsulta a API do MP pelo id antes
-// de confiar em qualquer status — um payload forjado não consegue, sozinho,
-// marcar um pedido como pago. Mas validar a assinatura evita que um atacante
-// force esta function a gastar chamadas à API do MP com ids inventados.
+// Validação de assinatura (x-signature): confirma que a notificação realmente
+// veio do Mercado Pago antes de gastar uma chamada de API com um id que pode
+// ter sido inventado por qualquer pessoa que descubra a URL deste endpoint
+// (ela é pública, já que o MP precisa conseguir chamá-la sem login). Sem essa
+// checagem, um atacante não consegue forjar um pagamento (a lógica abaixo
+// sempre reconsulta o status real na API do MP), mas poderia ficar mandando
+// ids aleatórios só para gastar as chamadas de API da nossa conta.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const MP_ACCESS_TOKEN = Deno.env.get('MP_ACCESS_TOKEN')!
+// "Chave secreta" gerada no painel do Mercado Pago (Suas integrações > [sua
+// aplicação] > Webhooks). Opcional por enquanto (Deno.env.get sem "!") porque
+// a aplicação ainda não tem essa chave configurada — assim que existir, a
+// validação abaixo passa a ser aplicada automaticamente, sem precisar mexer
+// no código de novo.
+const MP_WEBHOOK_SECRET = Deno.env.get('MP_WEBHOOK_SECRET') ?? null
+
+// Comparação em tempo constante: evita que um atacante descubra a assinatura
+// correta aos poucos, medindo quantos milissegundos a mais uma comparação
+// "===" comum leva quando os primeiros caracteres batem (timing attack).
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
+async function hasValidSignature(req: Request, paymentId: string): Promise<boolean> {
+  if (!MP_WEBHOOK_SECRET) return true // chave ainda não configurada: checagem fica desligada até lá
+
+  const signatureHeader = req.headers.get('x-signature')
+  const requestId = req.headers.get('x-request-id')
+  if (!signatureHeader || !requestId) return false
+
+  const parts: Record<string, string> = {}
+  for (const pair of signatureHeader.split(',')) {
+    const [key, value] = pair.split('=')
+    if (key && value) parts[key.trim()] = value.trim()
+  }
+  const ts = parts.ts
+  const receivedHash = parts.v1
+  if (!ts || !receivedHash) return false
+
+  // Formato exigido pelo Mercado Pago: monta a mesma string que eles assinaram
+  // do lado deles, para comparar o resultado do HMAC.
+  const manifest = `id:${paymentId.toLowerCase()};request-id:${requestId};ts:${ts};`
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(MP_WEBHOOK_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const signatureBytes = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(manifest))
+  const computedHash = Array.from(new Uint8Array(signatureBytes))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+
+  return timingSafeEqual(computedHash, receivedHash)
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -28,6 +78,11 @@ Deno.serve(async (req) => {
 
     if (!paymentId || topic !== 'payment') {
       return new Response('ignored', { status: 200, headers: corsHeaders })
+    }
+
+    if (!(await hasValidSignature(req, paymentId))) {
+      console.error('Assinatura do webhook do Mercado Pago inválida — notificação ignorada.')
+      return new Response('invalid signature', { status: 200, headers: corsHeaders })
     }
 
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
