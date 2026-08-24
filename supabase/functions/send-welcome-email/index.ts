@@ -11,6 +11,11 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const RESEND_FROM = Deno.env.get('RESEND_FROM') ?? 'Fórmula Íntima <onboarding@resend.dev>'
+// Só o Database Webhook do Supabase (configurado com este mesmo valor no
+// header customizado x-webhook-secret) pode acionar esta function — sem
+// isso, qualquer pessoa na internet poderia chamar o endpoint diretamente
+// e mandar e-mails para clientes reais.
+const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -49,6 +54,10 @@ function welcomeEmailHtml(fullName: string | null): string {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  if (req.headers.get('x-webhook-secret') !== WEBHOOK_SECRET) {
+    return new Response('unauthorized', { status: 401, headers: corsHeaders })
+  }
 
   try {
     const payload = await req.json()

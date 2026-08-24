@@ -2,6 +2,15 @@
 // Recebe as notificações do Mercado Pago. Sempre confirma o pagamento consultando
 // a API do Mercado Pago pelo id recebido (nunca confia em dados enviados direto no
 // corpo da notificação), depois marca o pedido como pago e baixa o estoque.
+//
+// TODO (fazer quando a conta de produção do Mercado Pago for configurada):
+// validar a assinatura HMAC do header "x-signature" usando a "Chave secreta"
+// do webhook (painel do MP > Suas integrações > Webhooks), comparando com um
+// HMAC-SHA256 do manifest "id:{data.id};request-id:{x-request-id};ts:{ts};".
+// Não é crítico hoje porque a lógica já reconsulta a API do MP pelo id antes
+// de confiar em qualquer status — um payload forjado não consegue, sozinho,
+// marcar um pedido como pago. Mas validar a assinatura evita que um atacante
+// force esta function a gastar chamadas à API do MP com ids inventados.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
