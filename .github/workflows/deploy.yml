@@ -38,6 +38,14 @@ jobs:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
 
+      - name: Gerar páginas de compartilhamento por produto (Open Graph)
+        working-directory: frontend
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+        run: node scripts/generate-share-pages.mjs
+
       - name: Preparar 404.html para rotas do React Router
         working-directory: frontend
         run: cp dist/index.html dist/404.html

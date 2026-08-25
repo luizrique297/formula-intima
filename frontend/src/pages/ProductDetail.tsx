@@ -85,7 +85,7 @@ export function ProductDetail() {
   }
 
   async function handleShare() {
-    const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/share-product?slug=${product!.slug}`
+    const shareUrl = `${window.location.origin}${import.meta.env.BASE_URL}produto/${product!.slug}/`
     if (navigator.share) {
       try {
         await navigator.share({ title: product!.name, url: shareUrl })
