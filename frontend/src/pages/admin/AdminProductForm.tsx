@@ -98,6 +98,7 @@ export function AdminProductForm() {
   const distinctColors = [...new Set(variants.map((v) => v.color).filter((c): c is string => !!c))]
 
   async function handleImageDelete(img: ProductImage) {
+    if (!confirm('Remover esta foto? Essa ação não pode ser desfeita.')) return
     await deleteProductImage(img)
     setImages((prev) => prev.filter((i) => i.id !== img.id))
   }
@@ -270,6 +271,7 @@ function VariantsSection({
   }
 
   async function handleDeleteVariant(variantId: string) {
+    if (!confirm('Remover esta variante e o estoque dela? Essa ação não pode ser desfeita.')) return
     await deleteVariant(variantId)
     setVariants((prev) => prev.filter((v) => v.id !== variantId))
   }

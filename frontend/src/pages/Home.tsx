@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const DIFERENCIAIS = [
   {
@@ -20,6 +21,7 @@ const DIFERENCIAIS = [
 ]
 
 export function Home() {
+  useDocumentTitle('', 'Lingerie e produtos íntimos com entrega discreta em todo o Brasil.')
   return (
     <div className="flex flex-col gap-16">
       <section className="rounded-2xl bg-gradient-to-br from-brand-plum to-brand-rose px-6 py-16 text-center text-white">

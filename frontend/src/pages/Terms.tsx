@@ -1,4 +1,7 @@
+import { useDocumentTitle } from '../lib/useDocumentTitle'
+
 export function Terms() {
+  useDocumentTitle('Termos de Uso')
   return (
     <div className="mx-auto max-w-2xl text-sm leading-relaxed text-brand-black/80">
       <h1 className="mb-6 font-serif text-2xl text-brand-plum">Termos de Uso</h1>

@@ -7,11 +7,13 @@ import { validateCoupon } from '../lib/coupons'
 import { supabase } from '../lib/supabase'
 import { formatPriceCents } from '../lib/format'
 import { AddressForm } from '../components/AddressForm'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import type { Address } from '../types/database'
 
 export function Checkout() {
   const { user } = useAuth()
   const { lines, totalCents } = useCart()
+  useDocumentTitle('Finalizar pedido')
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
   const [showForm, setShowForm] = useState(false)

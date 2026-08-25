@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { fetchOrdersForUser, ORDER_STATUS_LABEL, type OrderWithItems } from '../lib/orders'
 import { formatPriceCents } from '../lib/format'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function Orders() {
   const { user } = useAuth()
   const [orders, setOrders] = useState<OrderWithItems[]>([])
   const [loading, setLoading] = useState(true)
+  useDocumentTitle('Meus pedidos')
 
   useEffect(() => {
     if (!user) return

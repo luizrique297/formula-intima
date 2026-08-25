@@ -6,6 +6,8 @@ import { useCart } from '../contexts/CartContext'
 import { ShippingCalculator } from '../components/ShippingCalculator'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { ProductReviews } from '../components/ProductReviews'
+import { SizeGuide } from '../components/SizeGuide'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import type { ProductWithDetails } from '../types/database'
 
 export function ProductDetail() {
@@ -16,6 +18,7 @@ export function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
+  const [shared, setShared] = useState(false)
   const { addItem } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
@@ -30,6 +33,11 @@ export function ProductDetail() {
       setLoading(false)
     })
   }, [slug])
+
+  useDocumentTitle(
+    product?.name ?? '',
+    product?.description?.slice(0, 155) ?? 'Lingerie e produtos íntimos com entrega discreta em todo o Brasil.',
+  )
 
   if (loading) return <p className="py-16 text-center text-brand-black/60">Carregando…</p>
   if (!product) {
@@ -76,6 +84,21 @@ export function ProductDetail() {
     navigate('/carrinho')
   }
 
+  async function handleShare() {
+    const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/share-product?slug=${product!.slug}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product!.name, url: shareUrl })
+      } catch {
+        // cliente cancelou o compartilhamento — não é um erro
+      }
+      return
+    }
+    await navigator.clipboard.writeText(shareUrl)
+    setShared(true)
+    setTimeout(() => setShared(false), 2000)
+  }
+
   return (
     <div>
       <div className="grid gap-8 md:grid-cols-2">
@@ -110,7 +133,15 @@ export function ProductDetail() {
             {product.category && <p className="mb-1 text-sm text-brand-rose">{product.category.name}</p>}
             <h1 className="font-serif text-2xl text-brand-plum">{product.name}</h1>
           </div>
-          <FavoriteButton productId={product.id} className="border border-brand-rose-light" />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className="rounded-full border border-brand-rose-light px-3 py-1.5 text-xs font-medium text-brand-black/70 hover:bg-brand-rose-light"
+            >
+              {shared ? 'Link copiado!' : 'Compartilhar'}
+            </button>
+            <FavoriteButton productId={product.id} className="border border-brand-rose-light" />
+          </div>
         </div>
         <p className="mt-2 font-serif text-2xl text-brand-black">{formatPriceCents(price)}</p>
 
@@ -118,7 +149,10 @@ export function ProductDetail() {
 
         {product.variants.length > 0 && (
           <div className="mt-6">
-            <p className="mb-2 text-sm font-medium">Opções</p>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium">Opções</p>
+              {product.variants.some((v) => v.size) && <SizeGuide />}
+            </div>
             <div className="flex flex-wrap gap-2">
               {product.variants.map((v) => {
                 const label = [v.size, v.color].filter(Boolean).join(' / ') || 'Único'

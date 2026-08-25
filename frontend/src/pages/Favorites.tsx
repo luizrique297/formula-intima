@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { fetchFavoriteProducts, type FavoriteProduct } from '../lib/favorites'
 import { ProductCard } from '../components/ProductCard'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function Favorites() {
   const { user } = useAuth()
   const [favorites, setFavorites] = useState<FavoriteProduct[]>([])
   const [loading, setLoading] = useState(true)
+  useDocumentTitle('Meus favoritos')
 
   useEffect(() => {
     if (!user) return

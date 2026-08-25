@@ -2,11 +2,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../contexts/CartContext'
 import { useAuth } from '../contexts/AuthContext'
 import { formatPriceCents, publicImageUrl } from '../lib/format'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function Cart() {
   const { lines, loading, totalCents, updateQuantity, removeItem } = useCart()
   const { user } = useAuth()
   const navigate = useNavigate()
+  useDocumentTitle('Carrinho')
 
   if (loading) return <p className="py-16 text-center text-brand-black/60">Carregando…</p>
 

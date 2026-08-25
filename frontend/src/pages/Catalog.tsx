@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { fetchActiveProducts, fetchCategories, type ProductListItem } from '../lib/products'
 import { ProductCard } from '../components/ProductCard'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import type { Category, Department } from '../types/database'
 
 interface Props {
@@ -18,6 +19,13 @@ export function Catalog({ department, title }: Props) {
   const [loading, setLoading] = useState(true)
 
   const basePath = department === 'lingerie' ? '/lingerie' : '/sex-shop'
+
+  useDocumentTitle(
+    title,
+    department === 'lingerie'
+      ? 'Sutiãs, calcinhas, conjuntos e camisolas com entrega discreta em todo o Brasil.'
+      : 'Produtos íntimos para maiores de 18 anos, com entrega discreta em todo o Brasil.',
+  )
 
   useEffect(() => {
     fetchCategories(department).then(setCategories)

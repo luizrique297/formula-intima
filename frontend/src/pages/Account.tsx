@@ -9,10 +9,12 @@ import {
   type NewAddress,
 } from '../lib/addresses'
 import { AddressForm } from '../components/AddressForm'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import type { Address } from '../types/database'
 
 export function Account() {
   const { user, profile, refreshProfile } = useAuth()
+  useDocumentTitle('Meus dados')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
@@ -61,6 +63,7 @@ export function Account() {
   }
 
   async function handleDeleteAddress(id: string) {
+    if (!confirm('Remover este endereço? Essa ação não pode ser desfeita.')) return
     setAddressError(null)
     try {
       await deleteAddress(id)

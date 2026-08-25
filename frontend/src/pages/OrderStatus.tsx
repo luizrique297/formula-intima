@@ -4,11 +4,13 @@ import { fetchOrderById, ORDER_STATUS_LABEL, type OrderWithItems } from '../lib/
 import { formatPriceCents } from '../lib/format'
 import { ReturnRequestSection } from '../components/ReturnRequestSection'
 import { ReviewSection } from '../components/ReviewSection'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function OrderStatus() {
   const { orderId } = useParams<{ orderId: string }>()
   const [order, setOrder] = useState<OrderWithItems | null>(null)
   const [loading, setLoading] = useState(true)
+  useDocumentTitle('Status do pedido')
 
   useEffect(() => {
     if (!orderId) return

@@ -12,6 +12,7 @@ import { Orders } from './pages/Orders'
 import { Account } from './pages/Account'
 import { Favorites } from './pages/Favorites'
 import { Login } from './pages/Login'
+import { ResetPassword } from './pages/ResetPassword'
 import { Privacy } from './pages/Privacy'
 import { Terms } from './pages/Terms'
 import { NotFound } from './pages/NotFound'
@@ -41,6 +42,7 @@ export default function App() {
 
           <Route path="carrinho" element={<Cart />} />
           <Route path="entrar" element={<Login />} />
+          <Route path="redefinir-senha" element={<ResetPassword />} />
           <Route path="privacidade" element={<Privacy />} />
           <Route path="termos" element={<Terms />} />
           <Route path="pedido/:orderId" element={<OrderStatus />} />
