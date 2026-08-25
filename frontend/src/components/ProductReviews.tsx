@@ -3,9 +3,11 @@ import { fetchReviewsForProduct, summarizeRatings, type ProductReview } from '..
 
 function Stars({ rating }: { rating: number }) {
   return (
-    <span className="text-brand-gold">
-      {'★'.repeat(Math.round(rating))}
-      {'☆'.repeat(5 - Math.round(rating))}
+    <span className="text-brand-gold" role="img" aria-label={`${rating.toFixed(1)} de 5 estrelas`}>
+      <span aria-hidden="true">
+        {'★'.repeat(Math.round(rating))}
+        {'☆'.repeat(5 - Math.round(rating))}
+      </span>
     </span>
   )
 }

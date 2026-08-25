@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://luizrique297.github.io/formula-intima/sitemap.xml

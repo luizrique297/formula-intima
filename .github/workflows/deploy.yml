@@ -38,7 +38,7 @@ jobs:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
 
-      - name: Gerar páginas de compartilhamento por produto (Open Graph)
+      - name: Gerar páginas de compartilhamento por produto (Open Graph) e sitemap.xml
         working-directory: frontend
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

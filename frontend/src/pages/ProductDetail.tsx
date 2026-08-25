@@ -138,6 +138,8 @@ export function ProductDetail() {
               <button
                 key={img.id}
                 onClick={() => setMainImageIndex(i)}
+                aria-label={`Ver foto ${i + 1} de ${product.name}`}
+                aria-current={i === mainImageIndex}
                 className={`aspect-square overflow-hidden rounded-lg bg-brand-rose-light ${
                   i === mainImageIndex ? 'ring-2 ring-brand-rose' : ''
                 }`}

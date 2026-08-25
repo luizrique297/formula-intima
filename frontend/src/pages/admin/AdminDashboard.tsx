@@ -1,23 +1,34 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchAllProductsAdmin, fetchLowStockVariants, fetchOrdersAdmin, type LowStockVariant } from '../../lib/admin'
+import {
+  fetchAllProductsAdmin,
+  fetchLowStockVariants,
+  fetchOrdersAdmin,
+  type AdminOrder,
+  type LowStockVariant,
+} from '../../lib/admin'
 import { formatPriceCents } from '../../lib/format'
+import { SalesChart } from '../../components/admin/SalesChart'
 
 export function AdminDashboard() {
   const [productCount, setProductCount] = useState(0)
   const [pendingOrders, setPendingOrders] = useState(0)
   const [revenueCents, setRevenueCents] = useState(0)
+  const [orders, setOrders] = useState<AdminOrder[]>([])
   const [lowStock, setLowStock] = useState<LowStockVariant[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([fetchAllProductsAdmin(), fetchOrdersAdmin(), fetchLowStockVariants()]).then(
-      ([products, orders, lowStockVariants]) => {
+      ([products, fetchedOrders, lowStockVariants]) => {
         setProductCount(products.length)
-        setPendingOrders(orders.filter((o) => o.status === 'pago' || o.status === 'em_separacao').length)
+        setPendingOrders(fetchedOrders.filter((o) => o.status === 'pago' || o.status === 'em_separacao').length)
         setRevenueCents(
-          orders.filter((o) => o.status !== 'aguardando_pagamento' && o.status !== 'cancelado').reduce((s, o) => s + o.total_cents, 0),
+          fetchedOrders
+            .filter((o) => o.status !== 'aguardando_pagamento' && o.status !== 'cancelado')
+            .reduce((s, o) => s + o.total_cents, 0),
         )
+        setOrders(fetchedOrders)
         setLowStock(lowStockVariants)
         setLoading(false)
       },
@@ -43,6 +54,8 @@ export function AdminDashboard() {
           <p className="mt-1 font-serif text-2xl text-brand-plum">{formatPriceCents(revenueCents)}</p>
         </div>
       </div>
+
+      <SalesChart orders={orders} />
 
       {lowStock.length > 0 && (
         <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4">

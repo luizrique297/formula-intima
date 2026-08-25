@@ -93,6 +93,18 @@ function buildHtml(product) {
 </html>`
 }
 
+function buildSitemap(products) {
+  const today = new Date().toISOString().slice(0, 10)
+  const urls = [
+    `${SITE_ORIGIN}${BASE_PATH}`,
+    ...products.map((p) => `${SITE_ORIGIN}${BASE_PATH}produto/${p.slug}/`),
+  ]
+  const entries = urls
+    .map((url) => `  <url>\n    <loc>${escapeHtml(url)}</loc>\n    <lastmod>${today}</lastmod>\n  </url>`)
+    .join('\n')
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`
+}
+
 const products = await fetchActiveProducts()
 
 for (const product of products) {
@@ -101,4 +113,10 @@ for (const product of products) {
   await writeFile(resolve(dir, 'index.html'), buildHtml(product), 'utf-8')
 }
 
-console.log(`Páginas de compartilhamento geradas para ${products.length} produto(s).`)
+// sitemap.xml: lista a home e a página estática de cada produto (as únicas
+// URLs do site com conteúdo real e distinto por trás — as rotas internas do
+// app, depois do #, não valem a pena listar aqui, pois o Google trata todas
+// como o mesmo documento).
+await writeFile(resolve(DIST_DIR, 'sitemap.xml'), buildSitemap(products), 'utf-8')
+
+console.log(`Páginas de compartilhamento e sitemap gerados para ${products.length} produto(s).`)

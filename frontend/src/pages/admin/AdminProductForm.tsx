@@ -218,6 +218,7 @@ export function AdminProductForm() {
                   )}
                   <button
                     onClick={() => handleImageDelete(img)}
+                    aria-label="Remover foto"
                     className="absolute right-1 top-1 rounded-full bg-white px-1.5 text-xs text-red-600 shadow"
                   >
                     ×
