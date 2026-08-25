@@ -15,6 +15,7 @@ import {
 } from '../../lib/admin'
 import { fetchCategories } from '../../lib/products'
 import { formatPriceCents, publicImageUrl } from '../../lib/format'
+import { useToast } from '../../contexts/ToastContext'
 import type { Category, Inventory, Product, ProductImage, ProductVariant } from '../../types/database'
 
 export function AdminProductForm() {
@@ -37,6 +38,7 @@ export function AdminProductForm() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadColor, setUploadColor] = useState('')
+  const { showToast } = useToast()
 
   useEffect(() => {
     fetchCategories().then(setCategories)
@@ -61,27 +63,37 @@ export function AdminProductForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setSaving(true)
     setError(null)
+
+    const priceCents = Math.round(parseFloat(priceReais.replace(',', '.')) * 100)
+    if (!Number.isFinite(priceCents) || priceCents < 0) {
+      setError('Preço inválido — use um número, ex: 89.90.')
+      return
+    }
+
+    setSaving(true)
     try {
       const input: ProductFormInput = {
         name,
         slug: slug || slugify(name),
         description: description || null,
-        price_cents: Math.round(parseFloat(priceReais.replace(',', '.')) * 100),
+        price_cents: priceCents,
         category_id: categoryId || null,
         is_active: isActive,
         is_sensitive: isSensitive,
       }
       if (isNew) {
         const created = await createProduct(input)
+        showToast('Produto criado.')
         navigate(`/admin/produtos/${created.id}`, { replace: true })
       } else {
         await updateProduct(productId!, input)
         setProduct((p) => (p ? { ...p, ...input } : p))
+        showToast('Produto salvo.')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar produto.')
+      showToast('Não foi possível salvar o produto.', 'error')
     } finally {
       setSaving(false)
     }
@@ -90,17 +102,28 @@ export function AdminProductForm() {
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (!product || !e.target.files?.[0]) return
     const file = e.target.files[0]
-    const img = await uploadProductImage(product.id, file, images.length, uploadColor || null)
-    setImages((prev) => [...prev, img])
-    e.target.value = ''
+    try {
+      const img = await uploadProductImage(product.id, file, images.length, uploadColor || null)
+      setImages((prev) => [...prev, img])
+      showToast('Foto enviada.')
+    } catch {
+      showToast('Não foi possível enviar a foto.', 'error')
+    } finally {
+      e.target.value = ''
+    }
   }
 
   const distinctColors = [...new Set(variants.map((v) => v.color).filter((c): c is string => !!c))]
 
   async function handleImageDelete(img: ProductImage) {
     if (!confirm('Remover esta foto? Essa ação não pode ser desfeita.')) return
-    await deleteProductImage(img)
-    setImages((prev) => prev.filter((i) => i.id !== img.id))
+    try {
+      await deleteProductImage(img)
+      setImages((prev) => prev.filter((i) => i.id !== img.id))
+      showToast('Foto removida.')
+    } catch {
+      showToast('Não foi possível remover a foto.', 'error')
+    }
   }
 
   return (
@@ -239,41 +262,58 @@ function VariantsSection({
   const [priceOverride, setPriceOverride] = useState('')
   const [quantity, setQuantity] = useState('0')
   const [adding, setAdding] = useState(false)
+  const { showToast } = useToast()
 
   async function handleAddVariant(e: FormEvent) {
     e.preventDefault()
     setAdding(true)
-    await createVariant(
-      productId,
-      {
-        size: size || null,
-        color: color || null,
-        sku: sku || null,
-        price_cents_override: priceOverride ? Math.round(parseFloat(priceOverride.replace(',', '.')) * 100) : null,
-      },
-      parseInt(quantity, 10) || 0,
-    )
-    const { variants: refreshed } = await fetchProductForEdit(productId)
-    setVariants(refreshed)
-    setSize('')
-    setColor('')
-    setSku('')
-    setPriceOverride('')
-    setQuantity('0')
-    setAdding(false)
+    try {
+      await createVariant(
+        productId,
+        {
+          size: size || null,
+          color: color || null,
+          sku: sku || null,
+          price_cents_override: priceOverride ? Math.round(parseFloat(priceOverride.replace(',', '.')) * 100) : null,
+        },
+        parseInt(quantity, 10) || 0,
+      )
+      const { variants: refreshed } = await fetchProductForEdit(productId)
+      setVariants(refreshed)
+      setSize('')
+      setColor('')
+      setSku('')
+      setPriceOverride('')
+      setQuantity('0')
+      showToast('Variante adicionada.')
+    } catch {
+      showToast('Não foi possível adicionar a variante.', 'error')
+    } finally {
+      setAdding(false)
+    }
   }
 
   async function handleStockChange(variantId: string, quantity: number) {
-    await updateVariantStock(variantId, quantity)
-    setVariants((prev) =>
-      prev.map((v) => (v.id === variantId ? { ...v, inventory: { variant_id: variantId, quantity, updated_at: '' } } : v)),
-    )
+    try {
+      await updateVariantStock(variantId, quantity)
+      setVariants((prev) =>
+        prev.map((v) => (v.id === variantId ? { ...v, inventory: { variant_id: variantId, quantity, updated_at: '' } } : v)),
+      )
+      showToast('Estoque atualizado.')
+    } catch {
+      showToast('Não foi possível atualizar o estoque.', 'error')
+    }
   }
 
   async function handleDeleteVariant(variantId: string) {
     if (!confirm('Remover esta variante e o estoque dela? Essa ação não pode ser desfeita.')) return
-    await deleteVariant(variantId)
-    setVariants((prev) => prev.filter((v) => v.id !== variantId))
+    try {
+      await deleteVariant(variantId)
+      setVariants((prev) => prev.filter((v) => v.id !== variantId))
+      showToast('Variante removida.')
+    } catch {
+      showToast('Não foi possível remover a variante.', 'error')
+    }
   }
 
   return (

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { SexShopLayout } from './components/SexShopLayout'
@@ -16,15 +17,27 @@ import { ResetPassword } from './pages/ResetPassword'
 import { Privacy } from './pages/Privacy'
 import { Terms } from './pages/Terms'
 import { NotFound } from './pages/NotFound'
-import { AdminLayout } from './pages/admin/AdminLayout'
-import { AdminDashboard } from './pages/admin/AdminDashboard'
-import { AdminProducts } from './pages/admin/AdminProducts'
-import { AdminProductForm } from './pages/admin/AdminProductForm'
-import { AdminOrders } from './pages/admin/AdminOrders'
-import { AdminCategories } from './pages/admin/AdminCategories'
-import { AdminShipping } from './pages/admin/AdminShipping'
-import { AdminReturns } from './pages/admin/AdminReturns'
-import { AdminCoupons } from './pages/admin/AdminCoupons'
+
+// Carregadas sob demanda: quem nunca visita /admin (a esmagadora maioria
+// das visitas à loja) nunca baixa esse código — antes ele vinha embutido
+// no mesmo arquivo que toda cliente comum carregava.
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts').then((m) => ({ default: m.AdminProducts })))
+const AdminProductForm = lazy(() =>
+  import('./pages/admin/AdminProductForm').then((m) => ({ default: m.AdminProductForm })),
+)
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders').then((m) => ({ default: m.AdminOrders })))
+const AdminCategories = lazy(() =>
+  import('./pages/admin/AdminCategories').then((m) => ({ default: m.AdminCategories })),
+)
+const AdminShipping = lazy(() => import('./pages/admin/AdminShipping').then((m) => ({ default: m.AdminShipping })))
+const AdminReturns = lazy(() => import('./pages/admin/AdminReturns').then((m) => ({ default: m.AdminReturns })))
+const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons').then((m) => ({ default: m.AdminCoupons })))
+
+function AdminFallback() {
+  return <p className="text-brand-black/60">Carregando painel…</p>
+}
 
 export default function App() {
   return (
@@ -55,7 +68,14 @@ export default function App() {
           </Route>
 
           <Route element={<AdminRoute />}>
-            <Route path="admin" element={<AdminLayout />}>
+            <Route
+              path="admin"
+              element={
+                <Suspense fallback={<AdminFallback />}>
+                  <AdminLayout />
+                </Suspense>
+              }
+            >
               <Route index element={<AdminDashboard />} />
               <Route path="produtos" element={<AdminProducts />} />
               <Route path="produtos/:productId" element={<AdminProductForm />} />

@@ -17,6 +17,9 @@ export function Catalog({ department, title }: Props) {
   const [products, setProducts] = useState<ProductListItem[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
 
   const basePath = department === 'lingerie' ? '/lingerie' : '/sex-shop'
 
@@ -33,10 +36,31 @@ export function Catalog({ department, title }: Props) {
 
   useEffect(() => {
     setLoading(true)
-    fetchActiveProducts({ department, categorySlug: categoriaSlug || undefined, search: search || undefined })
-      .then(setProducts)
+    setPage(0)
+    fetchActiveProducts({ department, categorySlug: categoriaSlug || undefined, search: search || undefined, page: 0 })
+      .then(({ items, hasMore }) => {
+        setProducts(items)
+        setHasMore(hasMore)
+      })
       .finally(() => setLoading(false))
   }, [department, categoriaSlug, search])
+
+  function handleLoadMore() {
+    const nextPage = page + 1
+    setLoadingMore(true)
+    fetchActiveProducts({
+      department,
+      categorySlug: categoriaSlug || undefined,
+      search: search || undefined,
+      page: nextPage,
+    })
+      .then(({ items, hasMore }) => {
+        setProducts((prev) => [...prev, ...items])
+        setHasMore(hasMore)
+        setPage(nextPage)
+      })
+      .finally(() => setLoadingMore(false))
+  }
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -93,11 +117,24 @@ export function Catalog({ department, title }: Props) {
       ) : products.length === 0 ? (
         <p className="text-brand-black/60">Nenhum produto encontrado.</p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-          {products.map(({ product, mainImage }) => (
-            <ProductCard key={product.id} product={product} image={mainImage} basePath={basePath} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+            {products.map(({ product, mainImage }) => (
+              <ProductCard key={product.id} product={product} image={mainImage} basePath={basePath} />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="rounded-full border border-brand-rose px-5 py-2 text-sm font-medium text-brand-rose hover:bg-brand-rose-light disabled:opacity-60"
+              >
+                {loadingMore ? 'Carregando…' : 'Carregar mais produtos'}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

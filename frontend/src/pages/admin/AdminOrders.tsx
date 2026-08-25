@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchOrdersAdmin, updateOrderStatus, updateOrderTrackingCode, type AdminOrder } from '../../lib/admin'
 import { ORDER_STATUS_LABEL } from '../../lib/orders'
 import { formatPriceCents } from '../../lib/format'
+import { useToast } from '../../contexts/ToastContext'
 import type { OrderStatus } from '../../types/database'
 
 const STATUS_OPTIONS: OrderStatus[] = ['aguardando_pagamento', 'pago', 'em_separacao', 'enviado', 'entregue', 'cancelado']
@@ -10,6 +11,7 @@ export function AdminOrders() {
   const [orders, setOrders] = useState<AdminOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [savingTrackingId, setSavingTrackingId] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   useEffect(() => {
     fetchOrdersAdmin()
@@ -18,15 +20,26 @@ export function AdminOrders() {
   }, [])
 
   async function handleStatusChange(orderId: string, status: OrderStatus) {
-    await updateOrderStatus(orderId, status)
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)))
+    try {
+      await updateOrderStatus(orderId, status)
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)))
+      showToast('Status do pedido atualizado.')
+    } catch {
+      showToast('Não foi possível atualizar o status. Tente de novo.', 'error')
+    }
   }
 
   async function handleTrackingSave(orderId: string, trackingCode: string) {
     setSavingTrackingId(orderId)
-    await updateOrderTrackingCode(orderId, trackingCode)
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, tracking_code: trackingCode || null } : o)))
-    setSavingTrackingId(null)
+    try {
+      await updateOrderTrackingCode(orderId, trackingCode)
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, tracking_code: trackingCode || null } : o)))
+      showToast('Código de rastreio salvo.')
+    } catch {
+      showToast('Não foi possível salvar o código de rastreio.', 'error')
+    } finally {
+      setSavingTrackingId(null)
+    }
   }
 
   if (loading) return <p className="text-brand-black/60">Carregando…</p>

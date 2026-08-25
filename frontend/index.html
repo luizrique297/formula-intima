@@ -28,13 +28,14 @@
       script/estilo/imagem/conexão, mesmo que algum código malicioso consiga se
       injetar na página (ex: uma dependência npm comprometida) — o navegador
       simplesmente recusa rodar ou buscar qualquer coisa fora desta lista.
-      'self' = só o próprio domínio do site. O domínio abaixo é o do projeto
-      Supabase (API, login, storage de imagens) — a única origem externa que o
-      app realmente precisa.
+      'self' = só o próprio domínio do site. O domínio uzignwivxkigieccrmft
+      é o do projeto Supabase (API, login, storage de imagens); viacep.com.br
+      é a API pública e gratuita usada só para descobrir a cidade/estado a
+      partir do CEP digitado na calculadora de frete.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://uzignwivxkigieccrmft.supabase.co; connect-src 'self' https://uzignwivxkigieccrmft.supabase.co; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://uzignwivxkigieccrmft.supabase.co; connect-src 'self' https://uzignwivxkigieccrmft.supabase.co https://viacep.com.br; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
     <title>Fórmula Íntima</title>
   </head>

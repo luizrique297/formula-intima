@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchReturnRequestsAdmin, updateReturnRequestStatus, type AdminReturnRequest } from '../../lib/admin'
 import { RETURN_REASON_LABEL, RETURN_STATUS_LABEL } from '../../lib/returns'
 import { formatPriceCents } from '../../lib/format'
+import { useToast } from '../../contexts/ToastContext'
 import type { ReturnStatus } from '../../types/database'
 
 const STATUS_OPTIONS: ReturnStatus[] = ['solicitado', 'aprovado', 'rejeitado', 'concluido']
@@ -10,6 +11,7 @@ export function AdminReturns() {
   const [requests, setRequests] = useState<AdminReturnRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({})
+  const { showToast } = useToast()
 
   function load() {
     setLoading(true)
@@ -22,8 +24,13 @@ export function AdminReturns() {
 
   async function handleStatusChange(id: string, status: ReturnStatus) {
     const notes = notesDraft[id]
-    await updateReturnRequestStatus(id, status, notes ?? null)
-    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status, admin_notes: notes ?? r.admin_notes } : r)))
+    try {
+      await updateReturnRequestStatus(id, status, notes ?? null)
+      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status, admin_notes: notes ?? r.admin_notes } : r)))
+      showToast('Devolução atualizada. A cliente será avisada por e-mail.')
+    } catch {
+      showToast('Não foi possível atualizar a devolução. Tente de novo.', 'error')
+    }
   }
 
   if (loading) return <p className="text-brand-black/60">Carregando…</p>

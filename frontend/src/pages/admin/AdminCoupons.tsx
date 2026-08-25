@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { createCoupon, fetchCoupons, updateCouponActive, type Coupon } from '../../lib/coupons'
 import { formatPriceCents } from '../../lib/format'
+import { useToast } from '../../contexts/ToastContext'
 
 export function AdminCoupons() {
   const [coupons, setCoupons] = useState<Coupon[]>([])
@@ -14,6 +15,7 @@ export function AdminCoupons() {
   const [minOrderReais, setMinOrderReais] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   function load() {
     setLoading(true)
@@ -47,16 +49,22 @@ export function AdminCoupons() {
       setMaxUses('')
       setMinOrderReais('')
       load()
+      showToast('Cupom criado.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar cupom (código já existe?).')
+      showToast('Não foi possível criar o cupom.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   async function handleToggleActive(id: string, active: boolean) {
-    await updateCouponActive(id, active)
-    setCoupons((prev) => prev.map((c) => (c.id === id ? { ...c, active } : c)))
+    try {
+      await updateCouponActive(id, active)
+      setCoupons((prev) => prev.map((c) => (c.id === id ? { ...c, active } : c)))
+    } catch {
+      showToast('Não foi possível atualizar o cupom.', 'error')
+    }
   }
 
   return (

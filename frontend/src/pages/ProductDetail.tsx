@@ -3,11 +3,13 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { fetchProductBySlug } from '../lib/products'
 import { formatPriceCents, publicImageUrl } from '../lib/format'
 import { useCart } from '../contexts/CartContext'
+import { useAuth } from '../contexts/AuthContext'
 import { ShippingCalculator } from '../components/ShippingCalculator'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { ProductReviews } from '../components/ProductReviews'
 import { SizeGuide } from '../components/SizeGuide'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
+import { fetchRequestedVariantIds, requestStockNotification } from '../lib/stockNotifications'
 import type { ProductWithDetails } from '../types/database'
 
 export function ProductDetail() {
@@ -19,7 +21,10 @@ export function ProductDetail() {
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
   const [shared, setShared] = useState(false)
+  const [notifiedVariantIds, setNotifiedVariantIds] = useState<Set<string>>(new Set())
+  const [notifying, setNotifying] = useState(false)
   const { addItem } = useCart()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const basePath = location.pathname.startsWith('/sex-shop') ? '/sex-shop' : '/lingerie'
@@ -33,6 +38,11 @@ export function ProductDetail() {
       setLoading(false)
     })
   }, [slug])
+
+  useEffect(() => {
+    if (!user || !product) return
+    fetchRequestedVariantIds(user.id, product.variants.map((v) => v.id)).then(setNotifiedVariantIds)
+  }, [user, product])
 
   useDocumentTitle(
     product?.name ?? '',
@@ -82,6 +92,18 @@ export function ProductDetail() {
     if (!selectedVariantId) return
     await addItem(selectedVariantId, 1)
     navigate('/carrinho')
+  }
+
+  async function handleNotifyMe() {
+    if (!selectedVariantId) return
+    if (!user) {
+      navigate('/entrar', { state: { from: location } })
+      return
+    }
+    setNotifying(true)
+    await requestStockNotification(user.id, selectedVariantId)
+    setNotifiedVariantIds((prev) => new Set(prev).add(selectedVariantId))
+    setNotifying(false)
   }
 
   async function handleShare() {
@@ -180,22 +202,38 @@ export function ProductDetail() {
           {stock > 0 ? `${stock} em estoque` : 'Produto indisponível no momento'}
         </p>
 
-        <div className="mt-6 flex gap-3">
-          <button
-            onClick={handleAddToCart}
-            disabled={stock <= 0 || adding}
-            className="flex-1 rounded-full border border-brand-rose px-4 py-2.5 text-sm font-medium text-brand-rose hover:bg-brand-rose-light disabled:opacity-50"
-          >
-            {added ? 'Adicionado!' : 'Adicionar ao carrinho'}
-          </button>
-          <button
-            onClick={handleBuyNow}
-            disabled={stock <= 0}
-            className="flex-1 rounded-full bg-brand-rose px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-plum disabled:opacity-50"
-          >
-            Comprar agora
-          </button>
-        </div>
+        {stock <= 0 && selectedVariantId ? (
+          <div className="mt-6">
+            <button
+              onClick={handleNotifyMe}
+              disabled={notifying || notifiedVariantIds.has(selectedVariantId)}
+              className="w-full rounded-full bg-brand-rose px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-plum disabled:opacity-60"
+            >
+              {notifiedVariantIds.has(selectedVariantId)
+                ? 'Você será avisada quando chegar ✓'
+                : notifying
+                  ? 'Salvando…'
+                  : 'Avise-me quando chegar'}
+            </button>
+          </div>
+        ) : (
+          <div className="mt-6 flex gap-3">
+            <button
+              onClick={handleAddToCart}
+              disabled={stock <= 0 || adding}
+              className="flex-1 rounded-full border border-brand-rose px-4 py-2.5 text-sm font-medium text-brand-rose hover:bg-brand-rose-light disabled:opacity-50"
+            >
+              {added ? 'Adicionado!' : 'Adicionar ao carrinho'}
+            </button>
+            <button
+              onClick={handleBuyNow}
+              disabled={stock <= 0}
+              className="flex-1 rounded-full bg-brand-rose px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-plum disabled:opacity-50"
+            >
+              Comprar agora
+            </button>
+          </div>
+        )}
 
         <p className="mt-4 text-xs text-brand-black/40">Embalagem discreta, sem identificação do conteúdo.</p>
 

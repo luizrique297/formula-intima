@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { createCategory, slugify } from '../../lib/admin'
 import { fetchCategories } from '../../lib/products'
+import { useToast } from '../../contexts/ToastContext'
 import type { Category, Department } from '../../types/database'
 
 const DEPARTMENT_LABEL: Record<Department, string> = {
@@ -15,6 +16,7 @@ export function AdminCategories() {
   const [department, setDepartment] = useState<Department>('lingerie')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   function load() {
     setLoading(true)
@@ -33,8 +35,10 @@ export function AdminCategories() {
       await createCategory(name, slugify(name), department)
       setName('')
       load()
+      showToast('Categoria criada.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar categoria.')
+      showToast('Não foi possível criar a categoria.', 'error')
     } finally {
       setSaving(false)
     }
